@@ -488,3 +488,97 @@ export async function runAuditOnHtml(html, claimedUrl = "") {
   const truncated = html.length > MAX_BYTES;
   return scoreHtml(truncated ? html.slice(0, MAX_BYTES) : html, finalUrl, truncated, "paste");
 }
+
+// ---------- main: audit raw text (no markup) ----------
+// Plain prose can only be judged on content structure. Schema, meta tags,
+// canonical URLs and local signals simply aren't present, so we score the
+// content-AEO signals honestly and say plainly what we couldn't assess —
+// rather than inventing three scores from evidence that doesn't exist.
+export async function runAuditOnText(text) {
+  const clean = String(text || "").trim();
+  if (clean.length < 120) {
+    throw new Error("Paste at least a paragraph or two — we need enough content to judge structure.");
+  }
+
+  const body = clean.slice(0, MAX_BYTES);
+  const paras = body.split(/\n{2,}/).map((p) => p.trim()).filter((p) => p.length > 20);
+  const lines = body.split(/\n+/).map((l) => l.trim()).filter(Boolean);
+  const c = [];
+
+  // Direct answer opening (25)
+  const definitional = paras.slice(0, 3).some((p) => /^[^.!?]{15,200}\b(is|are|means|refers to|involves|includes)\b/i.test(p));
+  if (definitional) c.push(check("txt_direct", "Opens with a direct, definitional statement", 25, 25));
+  else c.push(check("txt_direct", "No direct answer in the opening", 0, 25,
+    `Start with a one-sentence definition in the pattern "<Thing> is <what it is>." AI answer engines quote that construction far more than any other. Move marketing language below it.`));
+
+  // Question-shaped lines (20)
+  const questions = lines.filter((l) => l.length < 120 && (l.endsWith("?") || /^(how|what|why|when|where|who|which|do|does|is|are|can|should|will)\b/i.test(l)));
+  if (questions.length >= 4) c.push(check("txt_questions", `${questions.length} question-shaped headings or lines`, 20, 20));
+  else if (questions.length >= 1) c.push(check("txt_questions", `Only ${questions.length} question-shaped line${questions.length === 1 ? "" : "s"}`, 10, 20,
+    `Break the content into sections headed by the questions customers actually type — "How much does it cost?" rather than "Pricing". Answer engines match user queries against heading text.`));
+  else c.push(check("txt_questions", "No question-shaped headings", 0, 20,
+    `Restructure into question-and-answer form. This is the single biggest content change you can make for AI citation.`));
+
+  // Extractable paragraph length (20)
+  const concise = paras.filter((p) => p.length >= 40 && p.length <= 320).length;
+  if (paras.length && concise / paras.length >= 0.4) c.push(check("txt_concise", `${concise}/${paras.length} paragraphs are cleanly extractable`, 20, 20));
+  else if (paras.length) c.push(check("txt_concise", `Only ${concise}/${paras.length} paragraphs sit in the extractable range`, 10, 20,
+    `Break long paragraphs into 40-320 character chunks. Answer engines lift self-contained sentences; a dense block gets skipped for a competitor's tighter one.`));
+  else c.push(check("txt_concise", "No paragraph structure detected", 0, 20,
+    `Separate your content into distinct paragraphs with blank lines between them.`));
+
+  // Sentence length (15)
+  const sentences = body.split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 15);
+  const longOnes = sentences.filter((s) => s.split(/\s+/).length > 34).length;
+  const longRatio = sentences.length ? longOnes / sentences.length : 0;
+  if (longRatio <= 0.15) c.push(check("txt_sentences", `Sentence length is readable (${sentences.length} sentences)`, 15, 15));
+  else c.push(check("txt_sentences", `${longOnes} of ${sentences.length} sentences run over 34 words`, 7, 15,
+    `Shorten the longest sentences. Anything an engine has to truncate mid-thought is unlikely to be quoted at all.`));
+
+  // Specificity — numbers, prices, timeframes (10)
+  const specifics = (body.match(/\b(\d+([.,]\d+)?\s*(%|percent|days?|weeks?|months?|years?|hours?|minutes?)|₹\s?[\d,]+|\$\s?[\d,]+)\b/gi) || []).length;
+  if (specifics >= 3) c.push(check("txt_specifics", `${specifics} concrete figures (prices, timeframes, percentages)`, 10, 10));
+  else c.push(check("txt_specifics", `Only ${specifics} concrete figure${specifics === 1 ? "" : "s"}`, specifics ? 5 : 0, 10,
+    `Add specifics — real prices, real timeframes, real numbers. Vague copy ("fast turnaround", "affordable") gives an answer engine nothing worth quoting.`));
+
+  // Hedging / filler (10)
+  const filler = (body.match(/\b(cutting[- ]edge|world[- ]class|synergy|leverage our|best[- ]in[- ]class|one[- ]stop|seamless|unlock your|take it to the next level)\b/gi) || []).length;
+  if (filler === 0) c.push(check("txt_filler", "No marketing filler detected", 10, 10));
+  else c.push(check("txt_filler", `${filler} piece${filler === 1 ? "" : "s"} of marketing filler`, Math.max(0, 10 - filler * 3), 10,
+    `Cut the stock phrases. They add length without adding information, and answer engines have nothing to extract from them.`));
+
+  const earned = c.reduce((s, x) => s + x.points, 0);
+  const max = c.reduce((s, x) => s + x.max, 0);
+  const score = Math.round((earned / max) * 100);
+
+  return {
+    url: "(pasted text)",
+    source: "text",
+    mode: "text",
+    truncated: clean.length > MAX_BYTES,
+    overall: score,
+    grade: score >= 85 ? "A" : score >= 70 ? "B" : score >= 55 ? "C" : score >= 40 ? "D" : "F",
+    scores: {
+      AEO: {
+        score,
+        earned,
+        max,
+        checks: c,
+        passing: c.filter((x) => x.pass).length,
+        failing: c.filter((x) => !x.pass).length,
+      },
+    },
+    priorities: c
+      .filter((x) => !x.pass && x.fix)
+      .map((x) => ({ ...x, category: "AEO", recoverable: x.max - x.points }))
+      .sort((a, b) => b.recoverable - a.recoverable)
+      .slice(0, 5),
+    notAssessed: [
+      "SEO — needs the page's HTML (title, meta, canonical, headings, images)",
+      "GEO — needs structured data (LocalBusiness schema, address, geo, hours)",
+    ],
+    schemaTypes: [],
+    stats: { words: body.split(/\s+/).length, paragraphs: paras.length, sentences: sentences.length },
+    auditedAt: new Date().toISOString(),
+  };
+}

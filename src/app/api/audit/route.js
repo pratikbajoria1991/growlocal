@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { runAudit, runAuditOnHtml } from "@/lib/audit";
+import { runAudit, runAuditOnHtml, runAuditOnText } from "@/lib/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,9 +13,24 @@ export async function POST(req) {
     return NextResponse.json({ error: "Send a JSON body." }, { status: 400 });
   }
 
-  const { url, html } = body || {};
+  const { url, html, text, mode } = body || {};
 
-  // Paste-HTML path — the fallback for sites behind bot protection.
+  // Plain-text mode — content structure only, scored honestly.
+  if (mode === "text" || (text && !html && !url)) {
+    if (!text || typeof text !== "string") {
+      return NextResponse.json({ error: "Paste some content first." }, { status: 400 });
+    }
+    if (text.length > 2_000_000) {
+      return NextResponse.json({ error: "That's over 2 MB of text. Trim it down." }, { status: 413 });
+    }
+    try {
+      return NextResponse.json(await runAuditOnText(text));
+    } catch (e) {
+      return NextResponse.json({ error: e.message || "Audit failed." }, { status: 400 });
+    }
+  }
+
+  // Pasted-HTML mode — full three-surface audit, no fetch needed.
   if (html && typeof html === "string") {
     if (html.length > 5_000_000) {
       return NextResponse.json({ error: "That HTML is over 5 MB. Paste just the page source." }, { status: 413 });
@@ -27,7 +42,7 @@ export async function POST(req) {
     }
   }
 
-  // URL path
+  // URL mode.
   if (!url || typeof url !== "string" || url.length > 2048) {
     return NextResponse.json({ error: "Provide a valid URL." }, { status: 400 });
   }
@@ -38,7 +53,6 @@ export async function POST(req) {
       {
         error: e.message || "Audit failed.",
         code: e.code || null,
-        // Tells the UI to surface the paste-HTML escape hatch.
         canPasteHtml: ["shielded", "timeout", "fetch_failed", "5xx"].includes(e.code),
       },
       { status: 502 }
