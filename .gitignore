@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# next
+.next/
+out/
+build/
+next-env.d.ts
+
+# runtime data — never commit user data or OAuth tokens
+.data/
+
+# env
+.env
+.env*.local
+!.env.example
+
+# misc
+.DS_Store
+Thumbs.db
+*.pem
+.vercel
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# editors
+.vscode/
+.idea/
+*.swp
