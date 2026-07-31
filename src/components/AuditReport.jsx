@@ -128,6 +128,13 @@ function OverallCard({ result }) {
           Grade {result.grade}
         </div>
         <div className="text-xs text-canvas-50/50 break-all font-mono leading-relaxed">{result.url}</div>
+        {result.source && result.source !== "fetch" && (
+          <div className="mt-2.5 text-[11px] text-canvas-50/40 leading-relaxed">
+            {result.source === "proxy"
+              ? "Fetched via reader proxy — the site blocked our direct request."
+              : "Scored from HTML you pasted."}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -112,6 +112,42 @@ async function attempt(url, profile, signal) {
   };
 }
 
+// Reader-proxy fallback for origins that reject our TLS fingerprint
+// (Cloudflare and friends fingerprint the handshake, so no header set gets
+// through). Verified byte-faithful on the signals we score: JSON-LD, meta,
+// canonical, headings, images and tel: links all match a direct fetch.
+// Only ever receives a public URL — no user data. Disclosed in /privacy.
+const PROXY_TIMEOUT_MS = 15_000;
+
+async function attemptViaProxy(url) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), PROXY_TIMEOUT_MS);
+  try {
+    const res = await fetch(`https://r.jina.ai/${url}`, {
+      signal: ctrl.signal,
+      headers: {
+        "x-respond-with": "html",
+        "user-agent": "Mozilla/5.0 (compatible; GrowlocalBot/1.0; +https://growlocal.vercel.app/audit)",
+      },
+    });
+    if (!res.ok) return null;
+    const buf = await res.arrayBuffer();
+    if (buf.byteLength < 200) return null;
+    const slice = buf.byteLength > MAX_BYTES ? buf.slice(0, MAX_BYTES) : buf;
+    return {
+      status: 200,
+      html: new TextDecoder("utf-8", { fatal: false }).decode(slice),
+      finalUrl: url,
+      truncated: buf.byteLength > MAX_BYTES,
+      viaProxy: true,
+    };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function fetchPage(url) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
@@ -154,24 +190,31 @@ async function fetchPage(url) {
       // 4xx/5xx → try the next profile before concluding
     }
 
-    // Every profile failed
+    // Direct fetch failed on every profile.
     const status = last?.status;
     const shield = detectShield(status, last?.html, last?.server);
 
-    if (shield) {
-      throw new AuditFetchError(
-        `That site is behind ${shield}, which blocks automated requests — so we can't fetch it directly. Use the “paste HTML” option below and you'll get the full audit in seconds.`,
-        { code: "shielded", shield }
-      );
-    }
+    // A 404 is a real answer, not a block — don't waste time proxying it.
     if (status === 404) {
       throw new AuditFetchError("That page returned 404 — it doesn't exist. Check the URL, or try the homepage.", { code: "404" });
+    }
+
+    // Blocked or unreachable: try the reader proxy before giving up. This is
+    // what turns "paste your HTML" from the common path into a rare one.
+    const proxied = await attemptViaProxy(url);
+    if (proxied) return proxied;
+
+    if (shield) {
+      throw new AuditFetchError(
+        `That site is behind ${shield} and our proxy couldn't reach it either. Use the “paste HTML” option below — you'll get the full audit in seconds.`,
+        { code: "shielded", shield }
+      );
     }
     if (status >= 500) {
       throw new AuditFetchError(`That site returned a ${status} server error. It may be temporarily down — try again shortly.`, { code: "5xx" });
     }
     throw new AuditFetchError(
-      `We couldn't fetch that page (HTTP ${status || "connection failed"}). Try the “paste HTML” option below.`,
+      `We couldn't reach that page (HTTP ${status || "connection failed"}). Try the “paste HTML” option below.`,
       { code: "fetch_failed" }
     );
   } finally {
@@ -417,8 +460,8 @@ export async function runAudit(rawUrl) {
     throw new Error("That doesn't look like a valid URL. Try something like example.com");
   }
 
-  const { html, finalUrl, truncated } = await fetchPage(url);
-  return scoreHtml(html, finalUrl, truncated, "fetch");
+  const { html, finalUrl, truncated, viaProxy } = await fetchPage(url);
+  return scoreHtml(html, finalUrl, truncated, viaProxy ? "proxy" : "fetch");
 }
 
 // ---------- main: audit pasted HTML ----------

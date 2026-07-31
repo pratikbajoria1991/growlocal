@@ -19,6 +19,7 @@ export default function Privacy() {
 
         <S n="2" t="What we collect">
           <p><strong>When you run an audit:</strong> the URL you submit. We fetch that page and analyse its public HTML. We do not store audit results tied to your identity unless you are signed in.</p>
+          <p>If the site blocks our direct request (some use bot protection that rejects automated traffic), we retry once through a third-party reader service, <a href="https://jina.ai" className="text-lime-600 underline" target="_blank" rel="noopener noreferrer">r.jina.ai</a>. Only the public URL is sent — never your email, account, or any personal data. If you use the paste-HTML option instead, the markup you paste is processed in memory and never stored.</p>
           <p><strong>When you create an account:</strong> your email address. We use magic links, so we never collect or store a password.</p>
           <p><strong>When you connect Google Business Profile:</strong> an OAuth refresh token issued by Google, encrypted at rest with AES-256-GCM. We never see or receive your Google password.</p>
           <p><strong>Automatically:</strong> standard server logs (IP, user agent, timestamp, path). No third-party advertising or tracking cookies.</p>
