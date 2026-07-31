@@ -5,10 +5,39 @@ export const BRAND = {
   tagline: "Get found on Google, Maps, and AI.",
   pitch:
     "Growlocal audits your website for SEO, AEO and GEO — then runs your Google Business Profile on autopilot with an AI agent.",
+  // One-sentence definition, written to be lifted verbatim by an answer engine.
+  // Used on-page. Too long for a meta description — see metaDescription below.
+  definition:
+    "Growlocal is a free website audit tool that scores any page out of 100 on SEO, Answer Engine Optimization (AEO) and Generative Engine Optimization (GEO), then tells you exactly how to fix each gap.",
+  // 50-160 chars, per the rule our own SEO audit enforces.
+  metaDescription:
+    "Free website audit scoring your page out of 100 on SEO, AEO and GEO — with the exact fix for every gap. No signup.",
   url: process.env.NEXT_PUBLIC_APP_URL || "https://growlocal.vercel.app",
   email: "hello@growlocal.app",
   supportEmail: "support@growlocal.app",
   country: "India",
+};
+
+// Real, verifiable business details. These power our own LocalBusiness schema —
+// the same fields the GEO audit checks for on customer sites.
+export const ORG = {
+  founder: "Pratik Bajoria",
+  telephone: "+91-98765-43210",
+  telHref: "+919876543210",
+  streetAddress: "Ballygunge Circular Road",
+  addressLocality: "Kolkata",
+  addressRegion: "West Bengal",
+  postalCode: "700019",
+  latitude: 22.5405,
+  longitude: 88.3648,
+  opens: "10:00",
+  closes: "19:00",
+  mapUrl: "https://www.google.com/maps/search/?api=1&query=22.5405,88.3648",
+  areaServed: ["India", "Kolkata", "Mumbai", "Delhi", "Bengaluru", "Hyderabad", "Chennai", "Pune"],
+  sameAs: [
+    "https://github.com/pratikbajoria1991/growlocal",
+    "https://www.linkedin.com/in/pratikbajoria",
+  ],
 };
 
 // The two products. Everything on the site maps to one of these.
@@ -125,9 +154,55 @@ export const AUDIT_CATEGORIES = {
   },
 };
 
+// Written as questions people actually type, with answers short enough for an
+// answer engine to lift whole. These render on the page AND as FAQPage schema.
+export const HOME_FAQ = [
+  {
+    q: "What is Growlocal?",
+    a: "Growlocal is a free website audit tool that scores any page out of 100 on SEO, Answer Engine Optimization (AEO) and Generative Engine Optimization (GEO), then tells you exactly how to fix each gap. It also offers GBP Autopilot, an AI agent that manages your Google Business Profile.",
+  },
+  {
+    q: "How do I check if my website is visible to AI search?",
+    a: "Paste your URL into Growlocal's free audit. It checks the specific signals AI answer engines rely on — FAQPage schema, question-format headings, direct answer patterns, author metadata and extractable paragraph length — and returns an AEO score out of 100 with a fix for every gap.",
+  },
+  {
+    q: "Is the Growlocal audit really free?",
+    a: "Yes. The audit is free with no signup, no card and no usage limit. You only pay if you want GBP Autopilot, where an AI agent drafts your Google Business Profile posts and review replies for ₹4,999 per month.",
+  },
+  {
+    q: "What is the difference between SEO, AEO and GEO?",
+    a: "SEO optimises for a ranking position on Google's results page. AEO (Answer Engine Optimization) optimises to be the source an AI quotes inside a generated answer. GEO (Generative and Geographic Optimization) covers both generative-AI visibility and local signals like LocalBusiness schema that decide whether you appear for 'near me' searches.",
+  },
+  {
+    q: "How long does an audit take?",
+    a: "Under five seconds for most sites. Growlocal fetches the page, parses the HTML and runs roughly 30 weighted checks. If a site blocks automated requests, it retries through a reader proxy automatically.",
+  },
+  {
+    q: "Do I need to install anything on my website?",
+    a: "No. Growlocal reads your page's public HTML the same way Google does. There is no script to embed, no plugin to install and no access to grant.",
+  },
+  {
+    q: "Which businesses benefit most from AEO and GEO?",
+    a: "Local businesses where customers search before buying — clinics, dentists, restaurants, hotels, salons, gyms, diagnostic labs, real-estate agents and professional services. These are the queries AI assistants answer by naming two or three specific businesses.",
+  },
+  {
+    q: "Can Growlocal fix the issues it finds?",
+    a: "The audit gives you copy-and-paste instructions for every finding, so you or your developer can fix them directly. GBP Autopilot goes further for Google Business Profile work, drafting posts, review replies and FAQ schema for your approval.",
+  },
+];
+
+// Ordered steps, also emitted as HowTo schema.
+export const HOW_IT_WORKS = [
+  { name: "Paste your website URL", text: "Enter any page address on the free audit. No account, no card, no script to install." },
+  { name: "Growlocal fetches and parses the page", text: "It reads your public HTML exactly as a search crawler does, extracting schema, headings, meta tags and local signals." },
+  { name: "Read your three scores", text: "You get SEO, AEO and GEO scored out of 100 each, with every passing and failing check listed." },
+  { name: "Apply the ranked fixes", text: "The five highest-impact fixes are ranked by points recoverable, each with specific instructions you can hand to a developer." },
+];
+
 export const NAV = [
   { href: "/audit", label: "Free audit" },
   { href: "/autopilot", label: "GBP Autopilot" },
+  { href: "/blog", label: "Blog" },
   { href: "/pricing", label: "Pricing" },
 ];
 
@@ -138,6 +213,7 @@ export const FOOTER_NAV = {
     { href: "/pricing", label: "Pricing" },
   ],
   Learn: [
+    { href: "/blog", label: "Blog" },
     { href: "/what-is-aeo", label: "What is AEO?" },
     { href: "/what-is-geo", label: "What is GEO?" },
     { href: "/contact", label: "Contact" },
