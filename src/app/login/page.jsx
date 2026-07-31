@@ -76,7 +76,15 @@ export default function Login() {
         </div>
       )}
 
-      <p className="text-xs text-forest-900/40 mt-8 leading-relaxed">
+      <div className="mt-8 p-4 rounded-xl bg-forest-900/[0.03] border hairline">
+        <p className="text-sm text-forest-900/60 leading-relaxed">
+          Looking for <strong className="text-forest-900">GBP Autopilot</strong>? We&apos;re onboarding in batches while Google reviews our Business Profile access.{" "}
+          <Link href="/autopilot" className="text-lime-600 underline">Join the waitlist</Link> — or run the{" "}
+          <Link href="/audit" className="text-lime-600 underline">free audit</Link>, which needs no account at all.
+        </p>
+      </div>
+
+      <p className="text-xs text-forest-900/40 mt-6 leading-relaxed">
         By signing in you agree to our <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy Policy</Link>.
       </p>
     </section>

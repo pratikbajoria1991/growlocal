@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, Check, ShieldCheck, Lock, KeyRound, FileText, MessageSquare, HelpCircle, BarChart3 } from "lucide-react";
+import { ArrowRight, Check, ShieldCheck, Lock, KeyRound, FileText, MessageSquare, HelpCircle, BarChart3, Clock } from "lucide-react";
 import { BRAND } from "@/lib/brand";
+import { WaitlistForm } from "@/components/WaitlistForm";
 
 export const metadata = {
   title: "GBP Autopilot — AI agent for your Google Business Profile",
@@ -29,13 +30,12 @@ export default function Autopilot() {
           <p className="text-lg text-forest-900/60 mb-8 max-w-2xl leading-relaxed">
             Connect once. An AI agent handles the weekly grind — posts, review replies, FAQ content, monthly reporting. Everything arrives as a draft for your approval. Nothing publishes without you.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Link href="/login?plan=autopilot" className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-forest-900 text-canvas-50 font-medium hover:bg-forest-800 transition-colors">
-              Connect your profile <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link href="/pricing" className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border hairline bg-white hover:bg-forest-900/[0.03] font-medium transition-colors">
-              See pricing
-            </Link>
+          <div className="rounded-4xl border hairline bg-white p-6 sm:p-7 max-w-lg">
+            <div className="inline-flex items-center gap-2 text-xs text-forest-900/50 mb-4">
+              <Clock className="w-3.5 h-3.5" />
+              Onboarding in batches — Google is reviewing our app for the Business Profile scope
+            </div>
+            <WaitlistForm />
           </div>
         </div>
       </section>
@@ -78,9 +78,9 @@ export default function Autopilot() {
         <div className="rounded-4xl bg-forest-900 text-canvas-50 p-10 sm:p-12 relative overflow-hidden">
           <div className="absolute inset-0 opacity-50 pointer-events-none" style={{ background: "radial-gradient(ellipse 60% 70% at 85% 0%, rgba(126,226,62,0.35), transparent 70%)" }} />
           <div className="relative">
-            <h2 className="font-display text-3xl sm:text-4xl mb-4">Not sure yet? Audit first.</h2>
+            <h2 className="font-display text-3xl sm:text-4xl mb-4">Available today: the free audit.</h2>
             <p className="text-canvas-50/70 mb-7 max-w-lg leading-relaxed">
-              Run the free visibility audit on your website. It costs nothing and shows you exactly what Autopilot would be fixing.
+              While you wait for an Autopilot slot, run the visibility audit on your site. It costs nothing, needs no signup, and shows you exactly what Autopilot would be fixing — plus what you can fix yourself right now.
             </p>
             <Link href="/audit" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-lime-500 text-forest-900 font-semibold hover:bg-lime-400 transition-colors">
               Run free audit <ArrowRight className="w-4 h-4" />

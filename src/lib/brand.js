@@ -39,7 +39,7 @@ export const PRODUCTS = [
       "Every review answered within 48 hours",
       "Monthly report with specific next actions",
     ],
-    cta: "Connect your profile",
+    cta: "Join the waitlist",
   },
 ];
 
@@ -74,8 +74,8 @@ export const PLANS = [
       "Monthly performance report",
       "Email support",
     ],
-    cta: "Start Autopilot",
-    href: "/login?plan=autopilot",
+    cta: "Join the waitlist",
+    href: "/autopilot",
     featured: true,
   },
   {
