@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Globe, ArrowRight, AlertCircle, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Globe, ArrowRight, AlertCircle, Loader2, ClipboardPaste, X } from "lucide-react";
 import { AuditReport } from "@/components/AuditReport";
 import { AUDIT_CATEGORIES } from "@/lib/brand";
 
@@ -12,17 +12,44 @@ export default function AuditPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [canPaste, setCanPaste] = useState(false);
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [html, setHtml] = useState("");
 
   async function submit(e) {
-    e.preventDefault();
+    e?.preventDefault();
     const target = url.trim();
     if (!target) return;
-    setLoading(true); setError(null); setResult(null);
+    setLoading(true); setError(null); setResult(null); setCanPaste(false);
     try {
       const res = await fetch("/api/audit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: target }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Audit failed.");
+        setCanPaste(Boolean(data.canPasteHtml));
+        setLoading(false);
+        return;
+      }
+      setResult(data);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message); setLoading(false);
+    }
+  }
+
+  async function submitHtml(e) {
+    e.preventDefault();
+    if (html.trim().length < 50) return;
+    setLoading(true); setError(null);
+    try {
+      const res = await fetch("/api/audit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ html, url: url.trim() }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Audit failed."); setLoading(false); return; }
@@ -33,7 +60,12 @@ export default function AuditPage() {
     }
   }
 
-  if (result) return <AuditReport result={result} onReset={() => { setResult(null); setUrl(""); }} />;
+  function reset() {
+    setResult(null); setUrl(""); setHtml("");
+    setError(null); setCanPaste(false); setPasteOpen(false);
+  }
+
+  if (result) return <AuditReport result={result} onReset={reset} />;
 
   return (
     <>
@@ -91,9 +123,20 @@ export default function AuditPage() {
             </div>
 
             {error && (
-              <div className="mt-3 flex items-start gap-2 text-sm text-rose-500">
-                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                <span>{error}</span>
+              <div className="mt-3 rounded-xl border border-rose-500/25 bg-rose-500/[0.05] p-3.5">
+                <div className="flex items-start gap-2 text-sm text-rose-600">
+                  <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                  <span className="leading-relaxed">{error}</span>
+                </div>
+                {canPaste && !pasteOpen && (
+                  <button
+                    type="button"
+                    onClick={() => setPasteOpen(true)}
+                    className="mt-3 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-forest-900 text-canvas-50 text-xs font-medium hover:bg-forest-800 transition-colors"
+                  >
+                    <ClipboardPaste className="w-3.5 h-3.5" /> Paste the HTML instead
+                  </button>
+                )}
               </div>
             )}
 
@@ -104,8 +147,65 @@ export default function AuditPage() {
                   {s}
                 </button>
               ))}
+              {!pasteOpen && (
+                <button
+                  type="button"
+                  onClick={() => setPasteOpen(true)}
+                  className="ml-auto inline-flex items-center gap-1 text-forest-900/45 hover:text-forest-900 transition-colors"
+                >
+                  <ClipboardPaste className="w-3 h-3" /> Paste HTML
+                </button>
+              )}
             </div>
           </motion.form>
+
+          {/* Paste-HTML fallback — always works, even behind Cloudflare */}
+          <AnimatePresence>
+            {pasteOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden max-w-2xl"
+              >
+                <form onSubmit={submitHtml} className="mt-4 rounded-2xl border hairline bg-white p-5">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div>
+                      <div className="font-medium text-sm mb-1">Paste your page HTML</div>
+                      <p className="text-xs text-forest-900/55 leading-relaxed">
+                        Open your page, press <kbd className="px-1.5 py-0.5 rounded bg-forest-900/5 border hairline font-mono text-[10px]">Ctrl+U</kbd> (View Source),
+                        select all with <kbd className="px-1.5 py-0.5 rounded bg-forest-900/5 border hairline font-mono text-[10px]">Ctrl+A</kbd>, copy, and paste below.
+                        You get the identical audit.
+                      </p>
+                    </div>
+                    <button type="button" onClick={() => setPasteOpen(false)} className="p-1 text-forest-900/35 hover:text-forest-900 shrink-0">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <textarea
+                    value={html}
+                    onChange={(e) => setHtml(e.target.value)}
+                    placeholder="<!DOCTYPE html>&#10;<html lang=&quot;en&quot;>&#10;  <head>…"
+                    rows={7}
+                    suppressHydrationWarning
+                    className="w-full px-3 py-2.5 rounded-xl border hairline bg-canvas-50 outline-none focus:border-lime-500/60 font-mono text-[11px] leading-relaxed resize-y transition-colors"
+                  />
+                  <div className="flex items-center gap-3 mt-3">
+                    <button
+                      type="submit"
+                      disabled={loading || html.trim().length < 50}
+                      className="px-4 py-2.5 rounded-xl bg-forest-900 text-canvas-50 text-sm font-medium inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-forest-800 transition-colors"
+                    >
+                      {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Scoring…</> : <>Audit this HTML <ArrowRight className="w-4 h-4" /></>}
+                    </button>
+                    {html.trim().length > 0 && (
+                      <span className="text-xs text-forest-900/40">{(html.length / 1024).toFixed(0)} KB pasted</span>
+                    )}
+                  </div>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </section>
 

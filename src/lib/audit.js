@@ -42,32 +42,141 @@ function findType(schemas, ...wanted) {
 const hasType = (schemas, ...wanted) => Boolean(findType(schemas, ...wanted));
 
 // ---------- fetch ----------
+
+// Two header profiles. Some origins reject unknown bots; others reject
+// browser-looking requests that lack a full header set. We try both before
+// giving up so a transient block doesn't cost the user their audit.
+const HEADER_PROFILES = [
+  {
+    name: "browser",
+    headers: {
+      "user-agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+      accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+      "accept-language": "en-US,en;q=0.9",
+      "sec-ch-ua": '"Chromium";v="131", "Not_A Brand";v="24"',
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": '"Windows"',
+      "sec-fetch-dest": "document",
+      "sec-fetch-mode": "navigate",
+      "sec-fetch-site": "none",
+      "sec-fetch-user": "?1",
+      "upgrade-insecure-requests": "1",
+      "cache-control": "no-cache",
+    },
+  },
+  {
+    name: "bot",
+    headers: {
+      "user-agent": "Mozilla/5.0 (compatible; GrowlocalBot/1.0; +https://growlocal.vercel.app/audit)",
+      accept: "text/html,application/xhtml+xml",
+      "accept-language": "en-US,en;q=0.9",
+    },
+  },
+];
+
+// Recognise bot-protection walls so we can explain rather than just fail.
+function detectShield(status, html, server) {
+  const s = (server || "").toLowerCase();
+  const body = (html || "").slice(0, 4000).toLowerCase();
+  if (s.includes("cloudflare") || body.includes("cf-browser-verification") || body.includes("cf-chl") || body.includes("attention required")) {
+    return "Cloudflare";
+  }
+  if (body.includes("incapsula") || body.includes("imperva")) return "Imperva";
+  if (body.includes("akamai") || s.includes("akamai")) return "Akamai";
+  if (body.includes("perimeterx") || body.includes("px-captcha")) return "PerimeterX";
+  if (body.includes("datadome")) return "DataDome";
+  if (status === 403 || status === 401) return "bot protection";
+  return null;
+}
+
+class AuditFetchError extends Error {
+  constructor(message, { code, shield } = {}) {
+    super(message);
+    this.code = code;
+    this.shield = shield;
+  }
+}
+
+async function attempt(url, profile, signal) {
+  const res = await fetch(url, { redirect: "follow", signal, headers: profile.headers });
+  const buf = await res.arrayBuffer();
+  const slice = buf.byteLength > MAX_BYTES ? buf.slice(0, MAX_BYTES) : buf;
+  return {
+    status: res.status,
+    server: res.headers.get("server"),
+    contentType: res.headers.get("content-type") || "",
+    html: new TextDecoder("utf-8", { fatal: false }).decode(slice),
+    finalUrl: res.url || url,
+    truncated: buf.byteLength > MAX_BYTES,
+  };
+}
+
 async function fetchPage(url) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  let last = null;
+
   try {
-    const res = await fetch(url, {
-      redirect: "follow",
-      signal: ctrl.signal,
-      headers: {
-        "user-agent": "Mozilla/5.0 (compatible; GrowlocalBot/1.0; +https://growlocal.vercel.app/audit)",
-        accept: "text/html,application/xhtml+xml",
-      },
-    });
-    const ct = res.headers.get("content-type") || "";
-    if (!/html|xml|text/i.test(ct)) throw new Error(`That URL returned ${ct || "a non-HTML response"} — point it at an HTML page.`);
-    const buf = await res.arrayBuffer();
-    const slice = buf.byteLength > MAX_BYTES ? buf.slice(0, MAX_BYTES) : buf;
-    return {
-      html: new TextDecoder("utf-8", { fatal: false }).decode(slice),
-      finalUrl: res.url || url,
-      status: res.status,
-      truncated: buf.byteLength > MAX_BYTES,
-    };
-  } catch (e) {
-    if (e.name === "AbortError") throw new Error("That site took longer than 10 seconds to respond.");
-    throw e;
-  } finally { clearTimeout(timer); }
+    for (const profile of HEADER_PROFILES) {
+      let r;
+      try {
+        r = await attempt(url, profile, ctrl.signal);
+      } catch (e) {
+        if (e.name === "AbortError") {
+          throw new AuditFetchError(
+            "That site took longer than 10 seconds to respond. It may be slow or temporarily down — try again, or use the “paste HTML” option below.",
+            { code: "timeout" }
+          );
+        }
+        // DNS / TLS / connection level
+        const msg = String(e.cause?.code || e.message || "");
+        if (/ENOTFOUND|EAI_AGAIN/i.test(msg)) {
+          throw new AuditFetchError("We couldn't find that domain. Check the spelling and try again.", { code: "dns" });
+        }
+        if (/CERT|TLS|SSL/i.test(msg)) {
+          throw new AuditFetchError("That site has an invalid SSL certificate, so we couldn't fetch it securely.", { code: "tls" });
+        }
+        last = e;
+        continue;
+      }
+
+      last = r;
+      if (r.status < 400) {
+        if (!/html|xml|text/i.test(r.contentType)) {
+          throw new AuditFetchError(
+            `That URL returned ${r.contentType || "a non-HTML response"}. Point it at a web page rather than a file or API endpoint.`,
+            { code: "not_html" }
+          );
+        }
+        return r;
+      }
+      // 4xx/5xx → try the next profile before concluding
+    }
+
+    // Every profile failed
+    const status = last?.status;
+    const shield = detectShield(status, last?.html, last?.server);
+
+    if (shield) {
+      throw new AuditFetchError(
+        `That site is behind ${shield}, which blocks automated requests — so we can't fetch it directly. Use the “paste HTML” option below and you'll get the full audit in seconds.`,
+        { code: "shielded", shield }
+      );
+    }
+    if (status === 404) {
+      throw new AuditFetchError("That page returned 404 — it doesn't exist. Check the URL, or try the homepage.", { code: "404" });
+    }
+    if (status >= 500) {
+      throw new AuditFetchError(`That site returned a ${status} server error. It may be temporarily down — try again shortly.`, { code: "5xx" });
+    }
+    throw new AuditFetchError(
+      `We couldn't fetch that page (HTTP ${status || "connection failed"}). Try the “paste HTML” option below.`,
+      { code: "fetch_failed" }
+    );
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // ---------- check builder ----------
@@ -254,19 +363,8 @@ function auditGEO(html, schemas) {
   return c;
 }
 
-// ---------- main ----------
-export async function runAudit(rawUrl) {
-  let url;
-  try {
-    const candidate = /^https?:\/\//i.test(rawUrl.trim()) ? rawUrl.trim() : `https://${rawUrl.trim()}`;
-    url = new URL(candidate).toString();
-  } catch {
-    throw new Error("That doesn't look like a valid URL. Try something like example.com");
-  }
-
-  const { html, finalUrl, status, truncated } = await fetchPage(url);
-  if (status >= 400) throw new Error(`That site returned HTTP ${status}.`);
-
+// ---------- scoring on already-fetched HTML ----------
+function scoreHtml(html, finalUrl, truncated, source) {
   const schemas = parseJsonLd(html);
   const groups = {
     SEO: auditSEO(html, finalUrl, schemas),
@@ -298,6 +396,7 @@ export async function runAudit(rawUrl) {
 
   return {
     url: finalUrl,
+    source,
     truncated,
     overall,
     grade: overall >= 85 ? "A" : overall >= 70 ? "B" : overall >= 55 ? "C" : overall >= 40 ? "D" : "F",
@@ -306,4 +405,43 @@ export async function runAudit(rawUrl) {
     schemaTypes: [...new Set(schemas.flatMap(typesOf))].filter(Boolean),
     auditedAt: new Date().toISOString(),
   };
+}
+
+// ---------- main: audit by URL ----------
+export async function runAudit(rawUrl) {
+  let url;
+  try {
+    const candidate = /^https?:\/\//i.test(rawUrl.trim()) ? rawUrl.trim() : `https://${rawUrl.trim()}`;
+    url = new URL(candidate).toString();
+  } catch {
+    throw new Error("That doesn't look like a valid URL. Try something like example.com");
+  }
+
+  const { html, finalUrl, truncated } = await fetchPage(url);
+  return scoreHtml(html, finalUrl, truncated, "fetch");
+}
+
+// ---------- main: audit pasted HTML ----------
+// The escape hatch for sites behind Cloudflare and friends. The user does
+// View Source, copies, pastes — and gets the identical audit.
+export async function runAuditOnHtml(html, claimedUrl = "") {
+  if (!html || html.trim().length < 50) {
+    throw new Error("That doesn't look like page HTML. Use View Source (Ctrl+U), select all, and paste the whole thing.");
+  }
+
+  let finalUrl = claimedUrl.trim();
+  if (finalUrl) {
+    try {
+      finalUrl = new URL(/^https?:\/\//i.test(finalUrl) ? finalUrl : `https://${finalUrl}`).toString();
+    } catch { /* keep whatever they typed */ }
+  } else {
+    // Try to recover the canonical URL from the markup itself.
+    finalUrl =
+      grab(/<link[^>]+rel=["']canonical["'][^>]*href=["']([^"']+)["']/i, html) ||
+      grab(/<meta[^>]+property=["']og:url["'][^>]*content=["']([^"']+)["']/i, html) ||
+      "(pasted HTML)";
+  }
+
+  const truncated = html.length > MAX_BYTES;
+  return scoreHtml(truncated ? html.slice(0, MAX_BYTES) : html, finalUrl, truncated, "paste");
 }
