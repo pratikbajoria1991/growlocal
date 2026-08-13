@@ -201,6 +201,7 @@ export const HOW_IT_WORKS = [
 
 export const NAV = [
   { href: "/audit", label: "Free audit" },
+  { href: "/tools", label: "Tools" },
   { href: "/autopilot", label: "GBP Autopilot" },
   { href: "/blog", label: "Blog" },
   { href: "/pricing", label: "Pricing" },
@@ -209,6 +210,7 @@ export const NAV = [
 export const FOOTER_NAV = {
   Product: [
     { href: "/audit", label: "Visibility audit" },
+    { href: "/tools", label: "Free tools" },
     { href: "/autopilot", label: "GBP Autopilot" },
     { href: "/pricing", label: "Pricing" },
   ],
