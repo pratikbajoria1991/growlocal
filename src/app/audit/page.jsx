@@ -1,9 +1,19 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Globe, Code2, FileText, ArrowRight, AlertCircle, Loader2, Info } from "lucide-react";
 import { AuditReport } from "@/components/AuditReport";
+import { AuditSkeleton } from "@/components/AuditSkeleton";
 import { AUDIT_CATEGORIES } from "@/lib/brand";
+
+// Narrating the actual steps makes a 3-second wait feel accounted for.
+const STAGES = [
+  "Fetching the page…",
+  "Parsing HTML and structured data…",
+  "Scoring search signals…",
+  "Checking answer-engine readiness…",
+  "Checking local visibility…",
+];
 
 const SAMPLES = ["zomato.com", "apollo247.com", "practo.com"];
 
@@ -22,6 +32,19 @@ export default function AuditPage() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [canPaste, setCanPaste] = useState(false);
+  const [stage, setStage] = useState(STAGES[0]);
+
+  // Advance the stage caption while the request is in flight.
+  useEffect(() => {
+    if (!loading) return;
+    setStage(STAGES[0]);
+    let i = 0;
+    const id = setInterval(() => {
+      i = Math.min(i + 1, STAGES.length - 1);
+      setStage(STAGES[i]);
+    }, 900);
+    return () => clearInterval(id);
+  }, [loading]);
 
   async function run(payload) {
     setLoading(true); setError(null); setCanPaste(false);
@@ -63,6 +86,7 @@ export default function AuditPage() {
     (tab === "text" && text.trim().length >= 120);
 
   if (result) return <AuditReport result={result} onReset={reset} />;
+  if (loading) return <AuditSkeleton stage={stage} />;
 
   const active = TABS.find((t) => t.id === tab);
 

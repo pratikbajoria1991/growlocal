@@ -9,6 +9,18 @@
   --forest: #0b1a12;
   --lime: #7ee23e;
   --rule: rgba(11, 26, 18, 0.08);
+
+  /* One easing curve and one duration scale across the whole product.
+     Inconsistent motion is the fastest way to make an interface feel cheap. */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --fast: 140ms;
+  --base: 240ms;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Anchored sections shouldn't land under the sticky nav. */
+  scroll-padding-top: 5rem;
 }
 
 html, body {
@@ -16,7 +28,9 @@ html, body {
   color: var(--forest);
   font-family: var(--font-inter), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
 /* Ambient mesh gradient — the Growlocal signature */
@@ -46,18 +60,33 @@ main, header, footer, aside { position: relative; z-index: 1; }
 
 input, textarea, select, button { font-family: inherit; }
 
-/* Score ring animation */
-.ring-arc { transition: stroke-dashoffset 1.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+/* Consistent, visible focus for keyboard users — never removed, only styled. */
+:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+:focus:not(:focus-visible) { outline: none; }
 
-/* Shimmer for loading */
+/* Numbers in tables and scores shouldn't jitter as they animate. */
+.tabular-nums { font-variant-numeric: tabular-nums; }
+
+/* Native disclosure marker removed — we supply our own +/× affordance. */
+summary::-webkit-details-marker { display: none; }
+summary { list-style: none; }
+
+/* Score ring animation */
+.ring-arc { transition: stroke-dashoffset 1.4s var(--ease); }
+
+/* Skeleton shimmer for loading states */
 .shimmer {
-  background: linear-gradient(90deg, rgba(11,26,18,0.03) 0%, rgba(11,26,18,0.07) 50%, rgba(11,26,18,0.03) 100%);
-  background-size: 200% 100%;
-  animation: shimmer 1.8s ease-in-out infinite;
+  background: linear-gradient(90deg, rgba(11,26,18,0.04) 25%, rgba(11,26,18,0.08) 37%, rgba(11,26,18,0.04) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
 }
 @keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0%   { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
 }
 
 /* Grid backdrop for hero */
@@ -67,4 +96,37 @@ input, textarea, select, button { font-family: inherit; }
     linear-gradient(90deg, rgba(11,26,18,0.035) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent 75%);
+}
+
+/* Scrollbars: present but quiet. */
+* { scrollbar-width: thin; scrollbar-color: rgba(11,26,18,0.18) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(11,26,18,0.16);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover { background: rgba(11,26,18,0.28); background-clip: content-box; }
+
+/* Respect the OS-level motion preference. Anyone who has asked their system
+   to reduce motion should not be given parallax, count-ups or slides. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print: strip chrome so an audit report prints as a clean document. */
+@media print {
+  body::before { display: none; }
+  header, footer, .no-print { display: none !important; }
+  body { background: white; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.75em; color: #555; }
 }

@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   CheckCircle2, XCircle, AlertTriangle, ChevronDown, Wrench,
   RotateCcw, Zap, TrendingUp, Info, Copy, Check,
@@ -164,6 +164,30 @@ export function AuditReport({ result, onReset }) {
   );
 }
 
+// Counts from 0 to the score. Skipped entirely when the OS asks for reduced
+// motion — a number that animates is a number that's harder to read.
+function CountUp({ to, duration = 900 }) {
+  const reduced = useReducedMotion();
+  const [n, setN] = useState(reduced ? to : 0);
+
+  useEffect(() => {
+    if (reduced) { setN(to); return; }
+    let raf;
+    const start = performance.now();
+    const tick = (now) => {
+      const t = Math.min((now - start) / duration, 1);
+      // easeOutExpo — fast start, gentle settle
+      const eased = t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+      setN(Math.round(eased * to));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [to, duration, reduced]);
+
+  return <>{n}</>;
+}
+
 function CategoryTag({ cat }) {
   const m = AUDIT_CATEGORIES[cat];
   if (!m) return null;
@@ -204,9 +228,9 @@ function OverallCard({ result, totalPassing, totalFailing }) {
           <motion.span
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
-            className="font-display text-7xl leading-none"
+            className="font-display text-7xl leading-none tabular-nums"
           >
-            {result.overall}
+            <CountUp to={result.overall} />
           </motion.span>
           <span className="text-canvas-50/40 text-lg">/100</span>
         </div>
