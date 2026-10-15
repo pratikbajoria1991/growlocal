@@ -67,6 +67,10 @@ export async function upsertClient(patch) {
     ownerEmail: (patch.ownerEmail ?? existing.ownerEmail ?? "").trim().toLowerCase(),
     services: (patch.services ?? existing.services ?? "").trim(),
     notes: (patch.notes ?? existing.notes ?? "").trim(),
+    // Monthly Growth Crew: the goal it works toward, and verified facts from
+    // the owner (hours, doctors, services) that let drafts ship complete.
+    crewGoal: (patch.crewGoal ?? existing.crewGoal ?? "").trim().slice(0, 500),
+    ownerFacts: (patch.ownerFacts ?? existing.ownerFacts ?? "").trim().slice(0, 4000),
     status: patch.status ?? existing.status ?? "trial",
     createdAt: existing.createdAt || now,
     updatedAt: now,

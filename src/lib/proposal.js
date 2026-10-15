@@ -345,7 +345,8 @@ export async function buildProposal({ input, website }) {
   const [comp, webOutcome] = await Promise.all([
     discoverCompetitors(place),
     site && !rented
-      ? runAudit(site).then((r) => ({ audit: r }), (e) => ({ error: e.message }))
+      // One retry: a slow or briefly failing site shouldn't silently drop every website issue.
+      ? runAudit(site).catch(() => new Promise((r) => setTimeout(r, 2000)).then(() => runAudit(site))).then((r) => ({ audit: r }), (e) => ({ error: e.message }))
       : Promise.resolve({ audit: rented ? "rented" : null }),
   ]);
 
@@ -387,6 +388,7 @@ export async function buildProposal({ input, website }) {
   return {
     id,
     url,
+    websiteAuditError: webOutcome.error || null,
     createdAt: new Date().toISOString(),
     input: String(input).slice(0, 300),
     place: {

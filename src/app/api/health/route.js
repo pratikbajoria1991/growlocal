@@ -5,7 +5,7 @@ import { hasApiToken } from "@/lib/api-token";
 import { get, set, del, storeMode } from "@/lib/store";
 import { placesBatch, placesProvider } from "@/lib/places";
 import { typesafeConfigured } from "@/lib/typesafe";
-import { llmConfigured } from "@/lib/crew/llm";
+import { llmConfigured, provider } from "@/lib/crew/llm";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,7 +35,7 @@ export async function GET(req) {
   } catch (e) { checks.placesLookup = `failed: ${e.code || "error"}`; }
 
   checks.typesafe = typesafeConfigured() ? "configured" : "not configured";
-  checks.anthropic = llmConfigured() ? "configured" : "not configured (crew disabled)";
+  checks.crewAi = llmConfigured() ? `configured (${provider()})` : "not configured (crew disabled)";
   checks.whatsapp = process.env.WHATSAPP_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID ? "configured" : "not configured";
 
   const problems = [...Object.entries(env).filter(([, v]) => v !== "ok").map(([k, v]) => `${k}: ${v}`), ...(checks.kvRoundTrip !== true ? ["KV round-trip failed"] : []), ...(checks.placesLookup !== "ok" ? ["Places lookup not working"] : [])];

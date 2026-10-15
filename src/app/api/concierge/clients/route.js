@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
 import { isAdmin, listClients, upsertClient, removeClient, listDrafts } from "@/lib/clients";
+import { hasApiToken } from "@/lib/api-token";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-async function gate() {
+async function gate(req) {
+  if (req && hasApiToken(req)) return { user: { email: "api-token" } };
   const user = await getCurrentUser();
   if (!user) return { error: NextResponse.json({ error: "Sign in first." }, { status: 401 }) };
   if (!isAdmin(user)) return { error: NextResponse.json({ error: "Not authorised." }, { status: 403 }) };
@@ -13,7 +15,7 @@ async function gate() {
 }
 
 export async function GET(req) {
-  const { error } = await gate();
+  const { error } = await gate(req);
   if (error) return error;
 
   const id = new URL(req.url).searchParams.get("id");
@@ -23,7 +25,7 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
-  const { error } = await gate();
+  const { error } = await gate(req);
   if (error) return error;
 
   let body;
@@ -34,7 +36,7 @@ export async function POST(req) {
 }
 
 export async function DELETE(req) {
-  const { error } = await gate();
+  const { error } = await gate(req);
   if (error) return error;
 
   const id = new URL(req.url).searchParams.get("id");

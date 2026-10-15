@@ -65,7 +65,7 @@ export function makeTools(ctx) {
     {
       name: "score_page_with_edits",
       description: "Apply your proposed edits to a COPY of the page and re-run Growlocal's real SEO/AEO/GEO audit. Returns before/after scores, edits that were rejected (and why), and the checks still failing. Use it to verify a fix actually moves the score before you submit.",
-      input_schema: { type: "object", properties: { edits: { type: "array" } }, required: ["edits"] },
+      input_schema: { type: "object", properties: { edits: editSchema.properties.edits }, required: ["edits"] },
       run: async ({ edits }) => {
         const before = await runAuditOnHtml(ctx.html, ctx.siteUrl || "");
         const patched = applyEdits(ctx.html, edits, { origin });
@@ -76,7 +76,7 @@ export function makeTools(ctx) {
     {
       name: "list_failing_checks",
       description: "The audit checks currently failing on the page, with the points each would recover and the audit's own fix text. Optionally filter to categories SEO / AEO / GEO.",
-      input_schema: { type: "object", properties: { categories: { type: "array" } }, required: [] },
+      input_schema: { type: "object", properties: { categories: { type: "array", items: { type: "string", enum: ["SEO", "AEO", "GEO"] } } }, required: [] },
       run: async ({ categories }) => failing(await runAuditOnHtml(ctx.html, ctx.siteUrl || ""), categories).slice(0, 14),
     },
   );

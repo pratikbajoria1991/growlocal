@@ -32,12 +32,30 @@ function upsertHeadTag(html, regex, tag) {
  * @param {{origin?: string}} opts origin of the site; canonical must match it
  * @returns {{html: string, applied: object[], rejected: {edit: object, reason: string}[]}}
  */
+// Agents sometimes put a JSON-LD <script> inside a content section. The
+// sanitizer would drop it (scripts never go into page HTML), so it is lifted
+// out first and applied as its own add_jsonld edit, through the same checks.
+const LD_SCRIPT = /<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+function liftJsonLd(edits) {
+  const out = [];
+  for (const e of edits || []) {
+    if (e?.op !== "add_section_html") { out.push(e); continue; }
+    const src = String(e.html || e.value || "");
+    const blocks = [...src.matchAll(LD_SCRIPT)].map((m) => m[1].trim()).filter(Boolean);
+    if (!blocks.length) { out.push(e); continue; }
+    const rest = src.replace(LD_SCRIPT, "");
+    if (rest.replace(/<[^>]+>/g, "").trim()) out.push({ ...e, html: rest, value: e.html ? e.value : rest });
+    for (const b of blocks) out.push({ op: "add_jsonld", value: b, html: "", rationale: e.rationale, issue_ids: e.issue_ids, liftedFrom: "add_section_html" });
+  }
+  return out;
+}
+
 export function applyEdits(html, edits, { origin } = {}) {
   let out = String(html);
   const applied = [], rejected = [];
   const reject = (edit, reason) => rejected.push({ edit, reason });
 
-  for (const edit of edits || []) {
+  for (const edit of liftJsonLd(edits)) {
     const op = edit?.op;
     const v = typeof edit?.value === "string" ? edit.value.trim() : "";
     if (!EDIT_OPS.includes(op)) { reject(edit, "unknown op"); continue; }
@@ -54,8 +72,10 @@ export function applyEdits(html, edits, { origin } = {}) {
       out = upsertHeadTag(out, /<link[^>]+rel=["']canonical["'][^>]*>/i, `<link rel="canonical" href="${esc(u.href)}">`);
     } else if (op === "add_jsonld") {
       let obj; try { obj = JSON.parse(v); } catch { reject(edit, "JSON-LD is not valid JSON"); continue; }
-      const t = obj?.["@type"];
-      if (!obj?.["@context"] || !t) { reject(edit, "JSON-LD needs @context and @type"); continue; }
+      // A single entity ({"@type": ...}) or several in "@graph" are both valid schema.org.
+      const graph = Array.isArray(obj?.["@graph"]) ? obj["@graph"] : null;
+      const t = graph ? graph.map((g) => (Array.isArray(g?.["@type"]) ? g["@type"][0] : g?.["@type"])).filter(Boolean) : obj?.["@type"];
+      if (!obj?.["@context"] || !t || (Array.isArray(t) && !t.length)) { reject(edit, "JSON-LD needs @context and an @type (or an @graph of typed entities)"); continue; }
       // Replace an existing block of the same primary type instead of duplicating it.
       const primary = Array.isArray(t) ? t[0] : t;
       const re = new RegExp(`<script[^>]+application/ld\\+json[^>]*>(?:(?!</script>)[\\s\\S])*?"@type"\\s*:\\s*"${String(primary).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"[\\s\\S]*?</script>`, "i");
@@ -72,13 +92,18 @@ export function applyEdits(html, edits, { origin } = {}) {
   return { html: out, applied, rejected };
 }
 
+export function jsonldTypes(obj) {
+  const list = Array.isArray(obj?.["@graph"]) ? obj["@graph"] : [obj];
+  return list.flatMap((g) => (Array.isArray(g?.["@type"]) ? g["@type"] : g?.["@type"] ? [g["@type"]] : []));
+}
+
 // Short human-readable diff for the owner / operator.
 export function describeEdits(applied) {
   return applied.map((e) => {
     if (e.op === "set_title") return `Title -> "${e.value}"`;
     if (e.op === "set_meta_description") return `Meta description -> "${e.value}"`;
     if (e.op === "set_canonical") return `Canonical -> ${e.value}`;
-    if (e.op === "add_jsonld") { try { return `Schema: ${JSON.parse(e.value)["@type"]}`; } catch { return "Schema block"; } }
+    if (e.op === "add_jsonld") { try { return `Schema: ${jsonldTypes(JSON.parse(e.value)).join(", ") || "block"}`; } catch { return "Schema block"; } }
     return `Add content section (${(e.html || e.value || "").length} chars)`;
   });
 }
