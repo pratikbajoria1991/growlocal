@@ -5,10 +5,10 @@
 @tailwind utilities;
 
 :root {
-  --canvas: #fbfdfb;
-  --forest: #0b1a12;
-  --lime: #7ee23e;
-  --rule: rgba(11, 26, 18, 0.08);
+  --canvas: #fbfaff;
+  --forest: #0e0b1f;
+  --indigo: #6366f1;
+  --rule: rgba(14, 11, 31, 0.08);
 
   /* One easing curve and one duration scale across the whole product.
      Inconsistent motion is the fastest way to make an interface feel cheap. */
@@ -39,9 +39,9 @@ body::before {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 70% 50% at 15% -10%, rgba(126, 226, 62, 0.10), transparent 65%),
+    radial-gradient(ellipse 70% 50% at 15% -10%, rgba(99, 102, 241, 0.12), transparent 65%),
     radial-gradient(ellipse 50% 40% at 90% 10%, rgba(56, 189, 248, 0.07), transparent 65%),
-    radial-gradient(ellipse 60% 50% at 50% 110%, rgba(126, 226, 62, 0.06), transparent 65%);
+    radial-gradient(ellipse 60% 50% at 50% 110%, rgba(139, 92, 246, 0.07), transparent 65%);
   pointer-events: none;
   z-index: 0;
 }
@@ -56,17 +56,28 @@ main, header, footer, aside { position: relative; z-index: 1; }
 
 .hairline { border-color: var(--rule); }
 
-::selection { background: var(--lime); color: var(--forest); }
+::selection { background: var(--indigo); color: white; }
 
 input, textarea, select, button { font-family: inherit; }
 
 /* Consistent, visible focus for keyboard users — never removed, only styled. */
 :focus-visible {
-  outline: 2px solid var(--lime);
+  outline: 2px solid var(--indigo);
   outline-offset: 2px;
   border-radius: 4px;
 }
 :focus:not(:focus-visible) { outline: none; }
+
+/* Premium button treatment for primary CTAs — gradient + lift on hover,
+   the "this costs money and it's worth it" signal on the highest-intent
+   actions (hero CTA, submit buttons), not applied everywhere indiscriminately. */
+.btn-premium {
+  background: #4f46e5;
+  box-shadow: 0 1px 2px rgba(14,11,31,0.12);
+  transition: background-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+}
+.btn-premium:hover { background: #4338ca; box-shadow: 0 2px 8px rgba(67,56,202,0.35); }
+.btn-premium:active { background: #3730a3; }
 
 /* Numbers in tables and scores shouldn't jitter as they animate. */
 .tabular-nums { font-variant-numeric: tabular-nums; }
@@ -80,7 +91,7 @@ summary { list-style: none; }
 
 /* Skeleton shimmer for loading states */
 .shimmer {
-  background: linear-gradient(90deg, rgba(11,26,18,0.04) 25%, rgba(11,26,18,0.08) 37%, rgba(11,26,18,0.04) 63%);
+  background: linear-gradient(90deg, rgba(14,11,31,0.04) 25%, rgba(14,11,31,0.08) 37%, rgba(14,11,31,0.04) 63%);
   background-size: 400% 100%;
   animation: shimmer 1.4s ease-in-out infinite;
 }
@@ -92,24 +103,24 @@ summary { list-style: none; }
 /* Grid backdrop for hero */
 .grid-bg {
   background-image:
-    linear-gradient(rgba(11,26,18,0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(11,26,18,0.035) 1px, transparent 1px);
+    linear-gradient(rgba(14,11,31,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14,11,31,0.035) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent 75%);
   -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent 75%);
 }
 
 /* Scrollbars: present but quiet. */
-* { scrollbar-width: thin; scrollbar-color: rgba(11,26,18,0.18) transparent; }
+* { scrollbar-width: thin; scrollbar-color: rgba(14,11,31,0.18) transparent; }
 *::-webkit-scrollbar { width: 10px; height: 10px; }
 *::-webkit-scrollbar-track { background: transparent; }
 *::-webkit-scrollbar-thumb {
-  background: rgba(11,26,18,0.16);
+  background: rgba(14,11,31,0.16);
   border-radius: 999px;
   border: 3px solid transparent;
   background-clip: content-box;
 }
-*::-webkit-scrollbar-thumb:hover { background: rgba(11,26,18,0.28); background-clip: content-box; }
+*::-webkit-scrollbar-thumb:hover { background: rgba(14,11,31,0.28); background-clip: content-box; }
 
 /* Respect the OS-level motion preference. Anyone who has asked their system
    to reduce motion should not be given parallax, count-ups or slides. */
@@ -130,3 +141,19 @@ summary { list-style: none; }
   body { background: white; }
   a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.75em; color: #555; }
 }
+
+/* ---- Homepage polish ---- */
+.text-gradient {
+  background: linear-gradient(120deg, #4f46e5 0%, #8b5cf6 55%, #38bdf8 110%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.text-gradient-light {
+  background: linear-gradient(120deg, #c7d2fe 0%, #e9d5ff 60%, #bae6fd 110%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.fade-up { animation: fadeUp 0.7s var(--ease) both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }

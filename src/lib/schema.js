@@ -4,7 +4,7 @@
 // Every builder here maps to a check in src/lib/audit.js — we score ourselves
 // with the same rubric we sell.
 
-import { BRAND, ORG } from "./brand";
+import { BRAND, ORG, PLANS, PROPOSAL_TIERS } from "./brand";
 
 const ORG_ID = `${BRAND.url}/#organization`;
 const SITE_ID = `${BRAND.url}/#website`;
@@ -20,26 +20,8 @@ export function organizationSchema() {
     image: `${BRAND.url}/opengraph-image`,
     description: BRAND.pitch,
     email: BRAND.email,
-    telephone: ORG.telephone,
     priceRange: "₹₹",
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: ORG.streetAddress,
-      addressLocality: ORG.addressLocality,
-      addressRegion: ORG.addressRegion,
-      postalCode: ORG.postalCode,
-      addressCountry: "IN",
-    },
-    geo: { "@type": "GeoCoordinates", latitude: ORG.latitude, longitude: ORG.longitude },
     areaServed: ORG.areaServed.map((name) => ({ "@type": "AdministrativeArea", name })),
-    openingHoursSpecification: [
-      {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-        opens: ORG.opens,
-        closes: ORG.closes,
-      },
-    ],
     founder: { "@type": "Person", name: ORG.founder },
     sameAs: ORG.sameAs,
     knowsAbout: [
@@ -150,27 +132,43 @@ export function articleSchema({ slug, title, description, datePublished, dateMod
   };
 }
 
-export function softwareSchema() {
+// Growlocal is sold as a service that does the work, not an app you operate —
+// so it's described as a Service with the business owner as the audience.
+// Offers come straight from PLANS so the markup can't drift from the page.
+export function serviceSchema() {
+  const managed = PLANS.find((p) => p.id === "managed");
   return {
     "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: BRAND.name,
-    applicationCategory: "BusinessApplication",
-    operatingSystem: "Web",
+    "@type": "Service",
+    "@id": `${BRAND.url}/#service`,
+    name: `${BRAND.name} — done-for-you local marketing`,
+    serviceType: "Local marketing management",
     description: BRAND.pitch,
-    url: BRAND.url,
-    publisher: { "@id": ORG_ID },
+    url: `${BRAND.url}/managed`,
+    provider: { "@id": ORG_ID },
+    areaServed: ORG.areaServed.map((name) => ({ "@type": "AdministrativeArea", name })),
+    audience: { "@type": "BusinessAudience", audienceType: "Local business owners" },
     offers: [
-      { "@type": "Offer", name: "Free", price: "0", priceCurrency: "INR", description: "Unlimited SEO, AEO and GEO audits" },
-      { "@type": "Offer", name: "Autopilot", price: "4999", priceCurrency: "INR", description: "One Google Business Profile managed by AI" },
-      { "@type": "Offer", name: "Agency", price: "14999", priceCurrency: "INR", description: "Up to 10 profiles" },
-    ],
-    featureList: [
-      "SEO audit with 100-point score",
-      "Answer Engine Optimization audit",
-      "Generative and Geographic Optimization audit",
-      "Google Business Profile automation",
-      "AI-drafted posts and review replies",
+      {
+        "@type": "Offer",
+        name: "Free visibility audit",
+        price: "0",
+        priceCurrency: "INR",
+        description: "Unlimited SEO, AEO and GEO website audits",
+      },
+      ...PROPOSAL_TIERS.map((t) => ({
+        "@type": "Offer",
+        name: `${managed.name} — ${t.name}`,
+        price: String(t.priceNumeric),
+        priceCurrency: "INR",
+        description: t.pitch,
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          price: String(t.priceNumeric),
+          priceCurrency: "INR",
+          unitText: "per location, per month",
+        },
+      })),
     ],
   };
 }

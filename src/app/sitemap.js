@@ -7,7 +7,8 @@ export default function sitemap() {
   const pages = [
     { path: "/", priority: 1.0, changeFrequency: "weekly" },
     { path: "/audit", priority: 0.95, changeFrequency: "weekly" },
-    { path: "/autopilot", priority: 0.9, changeFrequency: "monthly" },
+    { path: "/managed", priority: 0.95, changeFrequency: "monthly" },
+    { path: "/proposal", priority: 0.9, changeFrequency: "monthly" },
     { path: "/pricing", priority: 0.9, changeFrequency: "monthly" },
     { path: "/tools", priority: 0.85, changeFrequency: "monthly" },
     { path: "/blog", priority: 0.85, changeFrequency: "daily" },

@@ -1,14 +1,26 @@
 // Encrypted OAuth refresh-token store (AES-256-GCM) + signed OAuth state.
+// Tokens are stored in the same KV store as everything else — see lib/store.js
+// for why the old .data/oauth-tokens/*.json filesystem store didn't survive
+// Vercel's serverless environment. Encryption is unchanged; only the at-rest
+// location moved.
 
-import fs from "fs";
-import path from "path";
 import crypto from "crypto";
+import { get, set, del } from "./store";
 
-const TOKEN_DIR = path.join(process.cwd(), ".data", "oauth-tokens");
+const tokenKey = (userId) => `oauth:token:${userId}`;
+
+// Fails closed in production — a missing or short secret here is worse than
+// refusing to run: it's the key that protects every stored Google OAuth
+// refresh token, or the signature that stops a forged OAuth state.
+function requireSecret(name, fallback) {
+  const v = process.env[name];
+  if (v && v.length >= 32) return v;
+  if (process.env.NODE_ENV !== "production") return v || fallback;
+  throw new Error(`${name} must be set to 32+ random characters in production.`);
+}
 
 function key() {
-  const raw = process.env.OAUTH_TOKEN_ENCRYPTION_KEY || "dev-only-change-in-production";
-  return crypto.createHash("sha256").update(raw).digest();
+  return crypto.createHash("sha256").update(requireSecret("OAUTH_TOKEN_ENCRYPTION_KEY", "dev-only-change-in-production")).digest();
 }
 
 function encrypt(plain) {
@@ -24,31 +36,22 @@ function decrypt({ iv, tag, data }) {
   return Buffer.concat([d.update(Buffer.from(data, "base64")), d.final()]).toString("utf8");
 }
 
-export function saveToken(userId, payload) {
-  fs.mkdirSync(TOKEN_DIR, { recursive: true });
-  fs.writeFileSync(
-    path.join(TOKEN_DIR, `${userId}.json`),
-    JSON.stringify({ userId, stored_at: new Date().toISOString(), encrypted: encrypt(JSON.stringify(payload)) }, null, 2)
-  );
+export async function saveToken(userId, payload) {
+  await set(tokenKey(userId), { userId, stored_at: new Date().toISOString(), encrypted: encrypt(JSON.stringify(payload)) });
 }
 
-export function readToken(userId) {
-  const f = path.join(TOKEN_DIR, `${userId}.json`);
-  if (!fs.existsSync(f)) return null;
-  try {
-    const rec = JSON.parse(fs.readFileSync(f, "utf8"));
-    return JSON.parse(decrypt(rec.encrypted));
-  } catch { return null; }
+export async function readToken(userId) {
+  const rec = await get(tokenKey(userId));
+  if (!rec) return null;
+  try { return JSON.parse(decrypt(rec.encrypted)); } catch { return null; }
 }
 
-export function deleteToken(userId) {
-  const f = path.join(TOKEN_DIR, `${userId}.json`);
-  if (fs.existsSync(f)) { fs.unlinkSync(f); return true; }
-  return false;
+export async function deleteToken(userId) {
+  return del(tokenKey(userId));
 }
 
 function stateSecret() {
-  return process.env.OAUTH_STATE_SECRET || "dev-only-state-secret";
+  return requireSecret("OAUTH_STATE_SECRET", "dev-only-state-secret");
 }
 
 export function signState(payload) {

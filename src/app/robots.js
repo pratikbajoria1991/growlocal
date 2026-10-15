@@ -3,7 +3,9 @@ import { BRAND } from "@/lib/brand";
 export default function robots() {
   return {
     rules: [
-      { userAgent: "*", allow: "/", disallow: ["/api/", "/app"] },
+      // /preview/ holds sites built for businesses that haven't claimed them yet —
+      // they must never be crawled or compete with the real listing.
+      { userAgent: "*", allow: "/", disallow: ["/api/", "/app", "/p/", "/preview/"] },
       // Growlocal is an AEO tool — we practise what we sell. AI crawlers welcome.
       { userAgent: "GPTBot", allow: "/" },
       { userAgent: "ClaudeBot", allow: "/" },

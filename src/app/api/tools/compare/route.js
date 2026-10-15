@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
 import { runAudit } from "@/lib/audit";
+import { rateLimited } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function POST(req) {
+  // Two fetches per call — tighter quota than the single-URL audit.
+  const blocked = await rateLimited(req, "compare", { limit: 6, windowSeconds: 600 });
+  if (blocked) return blocked;
+
   let a, b;
   try { ({ a, b } = await req.json()); } catch {
     return NextResponse.json({ error: "Send a JSON body with two URLs." }, { status: 400 });

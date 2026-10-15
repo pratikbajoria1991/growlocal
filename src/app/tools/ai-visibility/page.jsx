@@ -29,12 +29,12 @@ export default function AiVisibilityTool() {
 
   return (
     <div className="max-w-3xl mx-auto px-5 sm:px-8 pt-12 pb-20">
-      <Link href="/tools" className="inline-flex items-center gap-1.5 text-sm text-forest-900/50 hover:text-forest-900 mb-8 transition-colors">
+      <Link href="/tools" className="inline-flex items-center gap-1.5 text-sm text-forest-900/70 hover:text-forest-900 mb-8 transition-colors">
         <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" /> All tools
       </Link>
 
-      <div className="w-11 h-11 rounded-xl bg-lime-500/15 flex items-center justify-center mb-5">
-        <Eye className="w-5 h-5 text-lime-600" aria-hidden="true" />
+      <div className="w-11 h-11 rounded-xl bg-indigo-500/15 flex items-center justify-center mb-5">
+        <Eye className="w-5 h-5 text-indigo-600" aria-hidden="true" />
       </div>
 
       <h1 className="font-display text-3xl sm:text-4xl leading-[1.05] tracking-[-0.03em] mb-4 text-balance">
@@ -47,7 +47,7 @@ export default function AiVisibilityTool() {
       </p>
 
       <form onSubmit={submit} className="mb-8">
-        <div className="flex items-stretch bg-white border hairline rounded-2xl shadow-lift overflow-hidden focus-within:border-lime-500/50 transition-colors">
+        <div className="flex items-stretch bg-white border hairline rounded-2xl shadow-lift overflow-hidden focus-within:border-indigo-500/50 transition-colors">
           <input
             type="text" inputMode="url" value={url} onChange={(e) => setUrl(e.target.value)}
             placeholder="yourbusiness.com" disabled={loading} suppressHydrationWarning
@@ -74,17 +74,17 @@ export default function AiVisibilityTool() {
             <div className="rounded-4xl bg-forest-900 text-canvas-50 p-7 mb-6 relative overflow-hidden">
               <div className="absolute inset-0 opacity-50 pointer-events-none" aria-hidden="true" style={{ background: `radial-gradient(ellipse 60% 70% at 85% 0%, ${res.blockedCount ? "rgba(244,63,94,0.3)" : "rgba(126,226,62,0.35)"}, transparent 70%)` }} />
               <div className="relative">
-                <div className="text-[11px] uppercase tracking-[0.15em] text-canvas-50/45 mb-1">AI crawler access</div>
+                <div className="text-[11px] uppercase tracking-[0.15em] text-canvas-50/75 mb-1">AI crawler access</div>
                 <div className="flex items-baseline gap-2 mb-3">
                   <span className="font-display text-6xl leading-none">{res.score}</span>
-                  <span className="text-canvas-50/40">/100</span>
+                  <span className="text-canvas-50/75">/100</span>
                 </div>
                 <p className="text-canvas-50/75 leading-relaxed">
                   {res.blockedCount === 0
                     ? `All ${res.allowedCount} major AI crawlers can reach ${res.origin}.`
                     : `${res.blockedCount} of ${res.crawlers.length} AI crawlers are blocked. Those engines cannot cite you.`}
                 </p>
-                <p className="text-xs text-canvas-50/45 mt-3 font-mono break-all">{res.robotsUrl}{res.robotsFound ? "" : " — not found"}</p>
+                <p className="text-xs text-canvas-50/75 mt-3 font-mono break-all">{res.robotsUrl}{res.robotsFound ? "" : " — not found"}</p>
               </div>
             </div>
 
@@ -94,15 +94,15 @@ export default function AiVisibilityTool() {
                 <li key={c.ua} className={`rounded-2xl border p-4 ${c.allowed ? "hairline bg-white" : "border-rose-500/25 bg-rose-500/[0.04]"}`}>
                   <div className="flex items-start gap-3">
                     {c.allowed
-                      ? <CheckCircle2 className="w-4 h-4 text-lime-600 shrink-0 mt-0.5" aria-hidden="true" />
+                      ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" aria-hidden="true" />
                       : <XCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" aria-hidden="true" />}
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-baseline gap-x-2">
                         <code className="text-sm font-semibold font-mono">{c.ua}</code>
-                        <span className="text-xs text-forest-900/45">{c.owner}</span>
+                        <span className="text-xs text-forest-900/65">{c.owner}</span>
                       </div>
-                      <p className="text-xs text-forest-900/55 mt-0.5">{c.purpose}</p>
-                      <p className={`text-xs mt-1.5 ${c.allowed ? "text-forest-900/50" : "text-rose-600"}`}>{c.reason}</p>
+                      <p className="text-xs text-forest-900/70 mt-0.5">{c.purpose}</p>
+                      <p className={`text-xs mt-1.5 ${c.allowed ? "text-forest-900/70" : "text-rose-600"}`}>{c.reason}</p>
                       {!c.allowed && (
                         <p className="text-xs text-forest-900/70 mt-2 leading-relaxed">
                           <strong>Fix:</strong> remove the rule blocking <code className="font-mono">{c.ua}</code> from robots.txt,
@@ -122,8 +122,8 @@ export default function AiVisibilityTool() {
                   {res.notes.map((n, i) => (
                     <li key={i} className="rounded-2xl border hairline bg-white p-4 flex items-start gap-3">
                       {n.kind === "good"
-                        ? <CheckCircle2 className="w-4 h-4 text-lime-600 shrink-0 mt-0.5" aria-hidden="true" />
-                        : <Info className="w-4 h-4 text-forest-900/35 shrink-0 mt-0.5" aria-hidden="true" />}
+                        ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" aria-hidden="true" />
+                        : <Info className="w-4 h-4 text-forest-900/65 shrink-0 mt-0.5" aria-hidden="true" />}
                       <div>
                         <p className="text-sm text-forest-900/80 leading-relaxed">{n.text}</p>
                         {n.fix && <p className="text-xs text-forest-900/60 mt-1.5 leading-relaxed">{n.fix}</p>}
@@ -138,7 +138,7 @@ export default function AiVisibilityTool() {
               <details className="rounded-2xl border hairline bg-white overflow-hidden mb-8 group">
                 <summary className="px-4 py-3 cursor-pointer text-sm font-medium flex items-center justify-between">
                   Your robots.txt
-                  <ChevronDown className="w-4 h-4 text-forest-900/35 group-open:rotate-180 transition-transform" aria-hidden="true" />
+                  <ChevronDown className="w-4 h-4 text-forest-900/65 group-open:rotate-180 transition-transform" aria-hidden="true" />
                 </summary>
                 <pre className="px-4 pb-4 text-[11px] font-mono leading-relaxed overflow-auto max-h-72 text-forest-900/70 whitespace-pre-wrap">{res.robotsPreview}</pre>
               </details>

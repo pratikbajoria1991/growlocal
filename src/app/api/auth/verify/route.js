@@ -10,7 +10,7 @@ export async function GET(req) {
   const token = searchParams.get("token");
   if (!email || !token) return NextResponse.redirect(new URL("/login?error=missing", req.url));
 
-  const user = consumeMagicLink(email, token);
+  const user = await consumeMagicLink(email, token);
   if (!user) return NextResponse.redirect(new URL("/login?error=expired", req.url));
 
   await setSession(user.id);

@@ -1,31 +1,34 @@
 import Link from "next/link";
-import { Eye, Package, Scale, ArrowRight } from "lucide-react";
+import { Eye, Package, Scale, Link2, ScanSearch, Search, MapPin, Sparkles, Gauge, ArrowRight } from "lucide-react";
 import { TOOLS } from "@/lib/tools";
 import { BRAND } from "@/lib/brand";
-import { JsonLd, webPageSchema, breadcrumbSchema } from "@/lib/schema";
+import { JsonLd, webPageSchema, breadcrumbSchema, faqSchema } from "@/lib/schema";
+import { FaqSection } from "@/components/FaqSection";
+import { TOOLS_FAQ } from "@/lib/page-faq";
 
-const ICONS = { Eye, Package, Scale };
+const ICONS = { Eye, Package, Scale, Link2, ScanSearch, Search, MapPin, Sparkles, Gauge };
 
 export const metadata = {
-  title: "Free AEO & local SEO tools",
-  description: "Free tools to check AI crawler access, generate schema markup, and compare your visibility against a competitor. No signup.",
+  title: "Free SEO, Maps & AI visibility tools",
+  description: "Free SEO tools for local businesses: site audit, keyword research, Google Maps rank checker, AI answer check, speed test and backlink finder. No signup.",
   alternates: { canonical: `${BRAND.url}/tools` },
 };
 
 export default function ToolsIndex() {
   return (
     <>
-      <JsonLd data={webPageSchema({ path: "/tools", title: "Free AEO & local SEO tools", description: metadata.description })} />
+      <JsonLd data={webPageSchema({ path: "/tools", title: "Free SEO, Maps & AI visibility tools", description: metadata.description })} />
       <JsonLd data={breadcrumbSchema([{ name: "Home", path: "/" }, { name: "Tools", path: "/tools" }])} />
+      <JsonLd data={faqSchema(TOOLS_FAQ)} />
 
       <section className="max-w-4xl mx-auto px-5 sm:px-8 pt-14 sm:pt-20 pb-10">
-        <div className="text-[11px] uppercase tracking-[0.15em] text-forest-900/35 mb-3">Free tools</div>
+        <div className="text-[11px] uppercase tracking-[0.15em] text-forest-900/65 mb-3">Free tools</div>
         <h1 className="font-display text-4xl sm:text-5xl leading-[1.03] tracking-[-0.03em] mb-5 text-balance">
           Free tools, no signup
         </h1>
         <p className="text-lg text-forest-900/65 leading-relaxed max-w-2xl text-pretty">
-          Small, sharp utilities that each answer one question. Every result is computed from your actual page — nothing
-          here is an estimate or a guess.
+          Growlocal&apos;s free tools each answer one question about how customers find you: on Google, on Google Maps and in AI
+          answers. Every result comes from live data at the moment you run it, and each tool says plainly what it can&apos;t see.
         </p>
       </section>
 
@@ -44,8 +47,8 @@ export default function ToolsIndex() {
                   </div>
                   <h2 className="font-display text-lg mb-1.5">{t.name}</h2>
                   <p className="text-sm font-medium text-forest-900/70 mb-2">{t.tagline}</p>
-                  <p className="text-sm text-forest-900/55 leading-relaxed flex-1">{t.description}</p>
-                  <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-lime-700">
+                  <p className="text-sm text-forest-900/70 leading-relaxed flex-1">{t.description}</p>
+                  <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-indigo-700">
                     Open tool <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
                   </span>
                 </Link>
@@ -60,13 +63,13 @@ export default function ToolsIndex() {
             >
               <div className="absolute inset-0 opacity-40 pointer-events-none" aria-hidden="true" style={{ background: "radial-gradient(ellipse 60% 70% at 90% 0%, rgba(126,226,62,0.35), transparent 70%)" }} />
               <div className="relative flex flex-col h-full">
-                <div className="text-[11px] uppercase tracking-[0.15em] text-lime-400 mb-2">Full audit</div>
+                <div className="text-[11px] uppercase tracking-[0.15em] text-indigo-400 mb-2">Full audit</div>
                 <h2 className="font-display text-lg mb-2">Score all three surfaces at once</h2>
                 <p className="text-sm text-canvas-50/70 leading-relaxed flex-1">
                   SEO, AEO and GEO scored out of 100 each, with every check listed and the fix spelled out. Takes about
                   five seconds.
                 </p>
-                <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-lime-400">
+                <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-400">
                   Run full audit <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
                 </span>
               </div>
@@ -74,6 +77,8 @@ export default function ToolsIndex() {
           </li>
         </ul>
       </section>
+
+      <FaqSection items={TOOLS_FAQ} />
     </>
   );
 }

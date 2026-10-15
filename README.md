@@ -30,7 +30,7 @@ Everything works without any API keys — audits run fully (they only need outbo
 
 | Variable | Effect when set |
 |---|---|
-| `ANTHROPIC_API_KEY` | Agent actions generate real content via Claude instead of stubs |
+| `GEMINI_API_KEY` | Agent actions generate real content via Gemini instead of stubs |
 | `GOOGLE_OAUTH_CLIENT_ID` / `_SECRET` | Enables the Google Business Profile connect flow |
 | `SESSION_SECRET` | Signs session cookies (HMAC-SHA256) |
 | `OAUTH_TOKEN_ENCRYPTION_KEY` | Encrypts stored refresh tokens (AES-256-GCM) |

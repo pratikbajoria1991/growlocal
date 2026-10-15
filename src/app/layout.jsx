@@ -2,9 +2,9 @@ import "./globals.css";
 import { Bricolage_Grotesque, Inter, JetBrains_Mono } from "next/font/google";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
+import { SiteChrome } from "@/components/SiteChrome";
 import { BRAND } from "@/lib/brand";
-import { getCurrentUser } from "@/lib/session";
-import { JsonLd, organizationSchema, webSiteSchema, softwareSchema } from "@/lib/schema";
+import { JsonLd, organizationSchema, webSiteSchema, serviceSchema } from "@/lib/schema";
 
 // Self-hosted at build time — no request to fonts.googleapis.com on page load,
 // no render-blocking stylesheet, no layout shift when the font swaps in.
@@ -39,17 +39,17 @@ export const metadata = {
   creator: "Pratik Bajoria",
   publisher: BRAND.name,
   keywords: [
-    "SEO audit tool",
+    "done-for-you local marketing",
+    "Google Business Profile management",
+    "local SEO service",
+    "local marketing without an agency",
+    "review reply management",
     "AEO audit",
     "GEO audit",
     "Answer Engine Optimization",
     "Generative Engine Optimization",
-    "Google Business Profile automation",
-    "GBP autopilot",
-    "local SEO tool",
     "AI search visibility",
     "free website audit",
-    "schema markup checker",
     "get cited by ChatGPT",
   ],
   alternates: { canonical: BRAND.url },
@@ -71,7 +71,7 @@ export const metadata = {
     follow: true,
     googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
   },
-  category: "technology",
+  category: "business",
 };
 
 export const viewport = {
@@ -80,14 +80,13 @@ export const viewport = {
   initialScale: 1,
 };
 
-export default async function RootLayout({ children }) {
-  const user = await getCurrentUser();
+export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${display.variable} ${inter.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
         <JsonLd data={organizationSchema()} />
         <JsonLd data={webSiteSchema()} />
-        <JsonLd data={softwareSchema()} />
+        <JsonLd data={serviceSchema()} />
       </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
         <a
@@ -96,9 +95,9 @@ export default async function RootLayout({ children }) {
         >
           Skip to content
         </a>
-        <Nav user={user ? { email: user.email } : null} />
+        <SiteChrome><Nav /></SiteChrome>
         <main id="main" className="flex-1">{children}</main>
-        <Footer />
+        <SiteChrome><Footer /></SiteChrome>
       </body>
     </html>
   );

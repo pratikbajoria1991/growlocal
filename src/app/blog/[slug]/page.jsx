@@ -14,14 +14,18 @@ export async function generateMetadata({ params }) {
   const { slug } = await params;
   const post = getPost(slug);
   if (!post) return {};
+  // First sentence of the answer, cut to fit a 160-character snippet.
+  const first = post.answer.split(/(?<=[.!?])\s/)[0];
+  const description = first.length <= 160 ? first : `${first.slice(0, 157).replace(/\s+\S*$/, "")}…`;
   return {
-    title: post.title,
-    description: post.answer,
+    title: post.seoTitle || post.title,
+    description,
     alternates: { canonical: `${BRAND.url}/blog/${slug}` },
     openGraph: {
       type: "article",
       title: post.title,
-      description: post.answer,
+      description,
+      images: [{ url: `${BRAND.url}/opengraph-image`, width: 1200, height: 630, alt: post.title }],
       publishedTime: post.published,
       authors: [ORG.founder],
       tags: post.tags,
@@ -51,11 +55,11 @@ export default async function Post({ params }) {
       ])} />
 
       <article className="max-w-3xl mx-auto px-5 sm:px-8 pt-12 pb-8">
-        <Link href="/blog" className="inline-flex items-center gap-1.5 text-sm text-forest-900/50 hover:text-forest-900 mb-8 transition-colors">
+        <Link href="/blog" className="inline-flex items-center gap-1.5 text-sm text-forest-900/70 hover:text-forest-900 mb-8 transition-colors">
           <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" /> All posts
         </Link>
 
-        <div className="flex items-center gap-3 mb-5 text-[11px] uppercase tracking-wider text-forest-900/40">
+        <div className="flex items-center gap-3 mb-5 text-[11px] uppercase tracking-wider text-forest-900/65">
           <time dateTime={post.published}>
             {new Date(post.published).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
           </time>
@@ -69,8 +73,8 @@ export default async function Post({ params }) {
         </h1>
 
         {/* Direct answer, set apart — this is the block an answer engine lifts */}
-        <div className="rounded-2xl border-l-[3px] border-lime-500 bg-lime-500/[0.06] pl-5 pr-5 py-4 mb-9">
-          <div className="text-[10px] uppercase tracking-[0.15em] text-lime-700 font-semibold mb-1.5">Short answer</div>
+        <div className="rounded-2xl border-l-[3px] border-indigo-500 bg-indigo-500/[0.06] pl-5 pr-5 py-4 mb-9">
+          <div className="text-[10px] uppercase tracking-[0.15em] text-indigo-700 font-semibold mb-1.5">Short answer</div>
           <p className="text-[17px] leading-relaxed text-forest-900/85 text-pretty">{post.answer}</p>
         </div>
 
@@ -83,7 +87,7 @@ export default async function Post({ params }) {
                 <ul className="space-y-2 mt-3">
                   {s.list.map((li) => (
                     <li key={li} className="flex gap-3 text-forest-900/75 leading-relaxed">
-                      <span className="mt-[0.6rem] w-1.5 h-1.5 rounded-full bg-lime-500 shrink-0" aria-hidden="true" />
+                      <span className="mt-[0.6rem] w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" aria-hidden="true" />
                       <span className="text-pretty">{li}</span>
                     </li>
                   ))}
@@ -101,7 +105,7 @@ export default async function Post({ params }) {
               <details key={f.q} className="group py-4">
                 <summary className="flex items-start justify-between gap-4 cursor-pointer list-none">
                   <h3 className="font-medium leading-snug">{f.q}</h3>
-                  <span className="mt-0.5 shrink-0 w-5 h-5 rounded-full border hairline flex items-center justify-center text-forest-900/40 text-sm group-open:rotate-45 transition-transform" aria-hidden="true">+</span>
+                  <span className="mt-0.5 shrink-0 w-5 h-5 rounded-full border hairline flex items-center justify-center text-forest-900/65 text-sm group-open:rotate-45 transition-transform" aria-hidden="true">+</span>
                 </summary>
                 <p className="mt-2.5 text-forest-900/70 leading-relaxed text-pretty">{f.a}</p>
               </details>
@@ -110,7 +114,7 @@ export default async function Post({ params }) {
         </section>
 
         {post.sourceNote && (
-          <p className="mt-8 flex items-start gap-2 text-xs text-forest-900/45 leading-relaxed">
+          <p className="mt-8 flex items-start gap-2 text-xs text-forest-900/65 leading-relaxed">
             <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" aria-hidden="true" />
             <span>Where this question comes from: {post.sourceNote}</span>
           </p>
@@ -121,7 +125,7 @@ export default async function Post({ params }) {
           <p className="text-sm text-canvas-50/70 mb-5 leading-relaxed">
             The free audit tests every signal mentioned in this post and scores you out of 100.
           </p>
-          <Link href="/audit" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-lime-500 text-forest-900 font-semibold text-sm hover:bg-lime-400 transition-colors">
+          <Link href="/audit" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl btn-premium text-white font-semibold text-sm transition-colors">
             Run a free audit <ArrowRight className="w-4 h-4" aria-hidden="true" />
           </Link>
         </div>
@@ -131,13 +135,13 @@ export default async function Post({ params }) {
 
       {others.length > 0 && (
         <section className="max-w-3xl mx-auto px-5 sm:px-8 pb-16 pt-4">
-          <h2 className="text-[11px] uppercase tracking-[0.15em] text-forest-900/35 mb-4">Keep reading</h2>
+          <h2 className="text-[11px] uppercase tracking-[0.15em] text-forest-900/65 mb-4">Keep reading</h2>
           <ul className="grid sm:grid-cols-2 gap-3">
             {others.map((p) => (
               <li key={p.slug}>
                 <Link href={`/blog/${p.slug}`} className="block h-full rounded-2xl border hairline bg-white p-5 hover:shadow-lift transition-shadow">
                   <h3 className="font-display text-base leading-snug mb-1.5 text-balance">{p.title}</h3>
-                  <span className="text-xs text-forest-900/45">{p.readingMinutes} min read</span>
+                  <span className="text-xs text-forest-900/65">{p.readingMinutes} min read</span>
                 </Link>
               </li>
             ))}

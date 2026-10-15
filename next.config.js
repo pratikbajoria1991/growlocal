@@ -6,6 +6,11 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
+  // Growlocal is a done-for-you service now, not a self-serve "Autopilot"
+  // tool. Keep the old URL's links and search equity pointing somewhere real.
+  async redirects() {
+    return [{ source: "/autopilot", destination: "/managed", permanent: true }];
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "lh3.googleusercontent.com" },

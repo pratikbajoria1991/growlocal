@@ -9,25 +9,36 @@ module.exports = {
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       colors: {
-        // Growlocal identity: deep forest + lime growth accent. Distinct from anything else.
+        // Growlocal identity: indigo-black neutral + a bold indigo/violet brand
+        // accent. `emerald` is kept separate and reserved for real pass/fail
+        // data semantics (checkmarks, grades, deltas) — brand color and
+        // success color are not the same thing, even when both used to be green.
         canvas: {
-          50: "#fbfdfb",
-          100: "#f4f8f4",
-          200: "#e8f0e8",
+          50: "#fbfaff",
+          100: "#f5f3fc",
+          200: "#eae6f7",
         },
         forest: {
-          900: "#0b1a12",
-          800: "#12281c",
-          700: "#1b3a29",
-          600: "#2a5540",
-          500: "#3d7357",
+          900: "#0e0b1f",
+          800: "#171332",
+          700: "#241d4d",
+          600: "#362b6e",
+          500: "#4c3d8f",
         },
-        lime: {
-          DEFAULT: "#7ee23e",
-          500: "#7ee23e",
-          600: "#63c227",
-          400: "#9bed6a",
-          300: "#b8f394",
+        indigo: {
+          DEFAULT: "#6366f1",
+          300: "#a5b4fc",
+          400: "#818cf8",
+          500: "#6366f1",
+          600: "#4f46e5",
+          700: "#4338ca",
+        },
+        emerald: {
+          DEFAULT: "#10b981",
+          400: "#34d399",
+          500: "#10b981",
+          600: "#059669",
+          700: "#047857",
         },
         sky: {
           500: "#38bdf8",
@@ -38,6 +49,10 @@ module.exports = {
         },
         rose: {
           500: "#f43f5e",
+        },
+        violet: {
+          500: "#a78bfa",
+          600: "#8b5cf6",
         },
       },
       boxShadow: {

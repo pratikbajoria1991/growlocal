@@ -3,6 +3,8 @@
 // Every check here is deterministic: we fetch robots.txt and llms.txt and read
 // what they say. No guessing, no AI required.
 
+import { safeFetch, FetchBlockedError } from "./safe-fetch.js";
+
 const TIMEOUT_MS = 8000;
 
 // The crawlers that feed AI answer engines. Blocking these removes you from
@@ -17,22 +19,15 @@ export const AI_CRAWLERS = [
   { ua: "Applebot-Extended", owner: "Apple", purpose: "Apple Intelligence and Siri answers", weight: 5 },
 ];
 
+// Visitor-supplied URL: fetched through safeFetch, which refuses private and
+// internal addresses on every redirect hop.
 async function grab(url) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
-    const res = await fetch(url, {
-      signal: ctrl.signal,
-      redirect: "follow",
-      headers: { "user-agent": "Mozilla/5.0 (compatible; GrowlocalBot/1.0; +https://growlocal.vercel.app)" },
-    });
-    if (!res.ok) return { ok: false, status: res.status, body: "" };
-    const body = (await res.text()).slice(0, 200_000);
-    return { ok: true, status: res.status, body };
-  } catch {
+    const r = await safeFetch(url, { timeoutMs: TIMEOUT_MS, maxBytes: 200_000, accept: "text/plain,*/*" });
+    return r.ok ? { ok: true, status: r.status, body: r.body } : { ok: false, status: r.status, body: "" };
+  } catch (e) {
+    if (e instanceof FetchBlockedError) throw e;
     return { ok: false, status: 0, body: "" };
-  } finally {
-    clearTimeout(timer);
   }
 }
 
@@ -74,7 +69,9 @@ function verdictFor(groups, agent) {
   for (const g of applicable) {
     for (const r of g.rules) {
       if (r.path === "" && r.type === "disallow") continue; // "Disallow:" empty means allow all
-      if (r.path === "/" || "/".startsWith(r.path) || r.path === "") {
+      // "/*" and "*" match every path, so they cover the homepage like "/".
+      const coversRoot = r.path === "" || r.path === "/" || r.path === "*" || r.path === "/*" || r.path === "/$" || "/".startsWith(r.path);
+      if (coversRoot) {
         if (!best || r.path.length > best.path.length || (r.path.length === best.path.length && r.type === "allow")) {
           best = r;
         }

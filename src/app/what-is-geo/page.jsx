@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { BRAND } from "@/lib/brand";
+import { JsonLd, webPageSchema, breadcrumbSchema, faqSchema } from "@/lib/schema";
 
 export const metadata = {
   title: "What is GEO (Generative Engine Optimization)?",
   description:
-    "GEO covers both generative-AI visibility and geographic/local search signals. Here's what it means for local businesses and the specific schema that drives it.",
+    "GEO covers generative-AI visibility and local search signals. Here is what it means for local businesses, and the schema that drives it.",
+  alternates: { canonical: `${BRAND.url}/what-is-geo` },
 };
 
 const FAQ = [
@@ -33,23 +36,12 @@ const FAQ = [
 export default function WhatIsGEO() {
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: FAQ.map((f) => ({
-              "@type": "Question",
-              name: f.q,
-              acceptedAnswer: { "@type": "Answer", text: f.a },
-            })),
-          }),
-        }}
-      />
+      <JsonLd data={webPageSchema({ path: "/what-is-geo", title: metadata.title, description: metadata.description })} />
+      <JsonLd data={breadcrumbSchema([{ name: "Home", path: "/" }, { name: "What is GEO?", path: "/what-is-geo" }])} />
+      <JsonLd data={faqSchema(FAQ)} />
 
       <article className="max-w-3xl mx-auto px-5 sm:px-8 py-16">
-        <div className="text-[11px] uppercase tracking-[0.15em] text-forest-900/35 mb-3">Guide</div>
+        <div className="text-[11px] uppercase tracking-[0.15em] text-forest-900/65 mb-3">Guide</div>
         <h1 className="font-display text-4xl sm:text-5xl leading-[1.05] tracking-tight mb-5">
           What is Generative Engine Optimization?
         </h1>
@@ -85,7 +77,7 @@ export default function WhatIsGEO() {
           <div className="relative">
             <h2 className="font-display text-2xl mb-3">Check your GEO score free</h2>
             <p className="text-canvas-50/70 mb-6 leading-relaxed max-w-md">We check every item on this list and tell you exactly what to add.</p>
-            <Link href="/audit" className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-lime-500 text-forest-900 font-semibold text-sm hover:bg-lime-400 transition-colors">
+            <Link href="/audit" className="inline-flex items-center gap-2 px-5 py-3 rounded-xl btn-premium text-white font-semibold text-sm transition-colors">
               Run free audit <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

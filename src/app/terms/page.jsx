@@ -2,14 +2,14 @@ import { BRAND } from "@/lib/brand";
 
 export const metadata = { title: "Terms of Service", description: `The agreement between you and ${BRAND.name}.` };
 
-const EFFECTIVE = "1 August 2026";
+const EFFECTIVE = "13 September 2026";
 
 export default function Terms() {
   return (
     <article className="max-w-3xl mx-auto px-5 sm:px-8 py-16">
-      <div className="text-[11px] uppercase tracking-[0.15em] text-forest-900/35 mb-3">Legal</div>
+      <div className="text-[11px] uppercase tracking-[0.15em] text-forest-900/65 mb-3">Legal</div>
       <h1 className="font-display text-4xl sm:text-5xl leading-tight mb-3">Terms of Service</h1>
-      <p className="text-sm text-forest-900/45 mb-10">Effective {EFFECTIVE}</p>
+      <p className="text-sm text-forest-900/65 mb-10">Effective {EFFECTIVE}</p>
 
       <div className="space-y-8 text-forest-900/80 leading-relaxed">
         <S n="1" t="Acceptance">
@@ -21,14 +21,16 @@ export default function Terms() {
           <p>You may audit any website you own or have authority to audit. You may not scrape, resell, or systematically republish audit output.</p>
         </S>
 
-        <S n="3" t="GBP Autopilot">
-          <p>Paid plans give you access to an AI agent that generates draft content for your Google Business Profile. All output is a draft requiring your review. You remain responsible for anything published to your profile.</p>
+        <S n="3" t="Growlocal Managed">
+          <p>Growlocal Managed is a done-for-you service. With the Manager access you grant on your Google Business Profile, and any website access you choose to give, we carry out routine work on your behalf: posts, replies to positive reviews, services and attributes, FAQ and schema markup, and directory listings.</p>
+          <p>We will not make the following changes without your explicit approval: your business name, category, address, hours or description; replies to negative or health-related reviews; and new or rewritten website pages or articles. Approval may be given in your dashboard or in writing on WhatsApp or email, and we keep a record of it.</p>
+          <p>Every change we make is logged and visible to you. You can remove our access at any time from your Business Profile settings.</p>
           <p>Plans bill monthly in advance and cancel with 30 days notice. Prices exclude GST.</p>
         </S>
 
         <S n="4" t="Your responsibilities">
           <ul className="list-disc pl-5 space-y-1.5">
-            <li>You have the right to grant access to any Google Business Profile you connect.</li>
+            <li>You have the right to grant access to any Google Business Profile or website you give us access to.</li>
             <li>The business information you provide is accurate and not misleading.</li>
             <li>You will not use the service to publish false reviews, fabricated testimonials, or deceptive content.</li>
           </ul>
@@ -37,7 +39,7 @@ export default function Terms() {
         <S n="5" t="What we will not do">
           <ul className="list-disc pl-5 space-y-1.5">
             <li>Generate or purchase fake reviews.</li>
-            <li>Publish anything to your profile without your explicit approval.</li>
+            <li>Make an approval-required change (listed in section 3) without your explicit approval.</li>
             <li>Use techniques that violate Google&apos;s guidelines.</li>
             <li>Guarantee rankings, traffic, or revenue.</li>
             <li>Share your data or OAuth tokens with third parties beyond the processors named in our Privacy Policy.</li>
@@ -57,7 +59,7 @@ export default function Terms() {
         </S>
 
         <S n="9" t="Contact">
-          <p>Questions? <a href={`mailto:${BRAND.email}`} className="text-lime-600 underline">{BRAND.email}</a></p>
+          <p>Questions? <a href={`mailto:${BRAND.email}`} className="text-indigo-600 underline">{BRAND.email}</a></p>
         </S>
       </div>
     </article>
@@ -67,7 +69,7 @@ export default function Terms() {
 function S({ n, t, children }) {
   return (
     <section>
-      <h2 className="font-display text-xl mb-3"><span className="text-lime-600 mr-2">{n}.</span>{t}</h2>
+      <h2 className="font-display text-xl mb-3"><span className="text-indigo-600 mr-2">{n}.</span>{t}</h2>
       <div className="space-y-2.5 text-[15px]">{children}</div>
     </section>
   );

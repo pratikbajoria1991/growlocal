@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { JsonLd, webPageSchema, breadcrumbSchema, faqSchema } from "@/lib/schema";
 import { BRAND } from "@/lib/brand";
 
 export const metadata = {
   title: "What is AEO (Answer Engine Optimization)?",
   description:
-    "AEO is the practice of structuring your content so AI answer engines — ChatGPT, Perplexity, Claude, Google AI Overviews — cite your business as the answer. Here's what it means and how to start.",
+    "AEO is the practice of structuring your content so AI answer engines such as ChatGPT, Perplexity and Google AI Overviews cite your business as the answer.",
+  alternates: { canonical: `${BRAND.url}/what-is-aeo` },
 };
 
 const FAQ = [
@@ -34,23 +36,12 @@ const FAQ = [
 export default function WhatIsAEO() {
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: FAQ.map((f) => ({
-              "@type": "Question",
-              name: f.q,
-              acceptedAnswer: { "@type": "Answer", text: f.a },
-            })),
-          }),
-        }}
-      />
+      <JsonLd data={webPageSchema({ path: "/what-is-aeo", title: metadata.title, description: metadata.description })} />
+      <JsonLd data={breadcrumbSchema([{ name: "Home", path: "/" }, { name: "What is AEO?", path: "/what-is-aeo" }])} />
+      <JsonLd data={faqSchema(FAQ)} />
 
       <article className="max-w-3xl mx-auto px-5 sm:px-8 py-16">
-        <div className="text-[11px] uppercase tracking-[0.15em] text-forest-900/35 mb-3">Guide</div>
+        <div className="text-[11px] uppercase tracking-[0.15em] text-forest-900/65 mb-3">Guide</div>
         <h1 className="font-display text-4xl sm:text-5xl leading-[1.05] tracking-tight mb-5">
           What is Answer Engine Optimization?
         </h1>
@@ -84,7 +75,7 @@ export default function WhatIsAEO() {
           <div className="relative">
             <h2 className="font-display text-2xl mb-3">Score your site&apos;s AEO in seconds</h2>
             <p className="text-canvas-50/70 mb-6 leading-relaxed max-w-md">Free, no signup. You&apos;ll get an AEO score out of 100 plus the exact fix for every gap.</p>
-            <Link href="/audit" className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-lime-500 text-forest-900 font-semibold text-sm hover:bg-lime-400 transition-colors">
+            <Link href="/audit" className="inline-flex items-center gap-2 px-5 py-3 rounded-xl btn-premium text-white font-semibold text-sm transition-colors">
               Run free audit <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

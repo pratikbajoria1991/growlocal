@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { get, set, storeAvailable } from "@/lib/store";
 import { allSlugs } from "@/lib/posts";
+import { rateLimited } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -38,6 +39,9 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
+  const blocked = await rateLimited(req, "comments", { limit: 8, windowSeconds: 600 });
+  if (blocked) return blocked;
+
   let payload;
   try { payload = await req.json(); } catch {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });

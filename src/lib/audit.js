@@ -6,6 +6,7 @@
 //
 // Every check returns a `fix` string with concrete, copy-pasteable instructions.
 
+import { safeFetch, FetchBlockedError } from "./safe-fetch.js";
 const MAX_BYTES = 3_000_000;
 const TIMEOUT_MS = 10_000;
 
@@ -98,17 +99,27 @@ class AuditFetchError extends Error {
   }
 }
 
-async function attempt(url, profile, signal) {
-  const res = await fetch(url, { redirect: "follow", signal, headers: profile.headers });
-  const buf = await res.arrayBuffer();
-  const slice = buf.byteLength > MAX_BYTES ? buf.slice(0, MAX_BYTES) : buf;
+// Fetched through safeFetch: the URL comes from a public form, so every
+// redirect hop and the connection itself are refused if they point at a
+// private or internal address, and the body is streamed with a byte cap.
+async function attempt(url, profile, deadline) {
+  let r;
+  try {
+    r = await safeFetch(url, { timeoutMs: Math.max(1000, deadline - Date.now()), maxBytes: MAX_BYTES, headers: profile.headers });
+  } catch (e) {
+    if (e instanceof FetchBlockedError) throw new AuditFetchError(e.message, { code: "blocked" });
+    throw e;
+  }
+  if (r.timedOut) throw Object.assign(new Error("timeout"), { name: "AbortError" });
+  if (r.tooManyRedirects) throw new AuditFetchError("That URL redirects more than 4 times. Try the final address directly.", { code: "redirects" });
+  if (r.status === 0) throw new Error(r.error || "fetch failed");
   return {
-    status: res.status,
-    server: res.headers.get("server"),
-    contentType: res.headers.get("content-type") || "",
-    html: new TextDecoder("utf-8", { fatal: false }).decode(slice),
-    finalUrl: res.url || url,
-    truncated: buf.byteLength > MAX_BYTES,
+    status: r.status,
+    server: r.headers?.get("server") || null,
+    contentType: r.headers?.get("content-type") || "",
+    html: r.body,
+    finalUrl: r.url,
+    truncated: Boolean(r.truncated),
   };
 }
 
@@ -149,16 +160,16 @@ async function attemptViaProxy(url) {
 }
 
 async function fetchPage(url) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  const deadline = Date.now() + TIMEOUT_MS;
   let last = null;
 
   try {
     for (const profile of HEADER_PROFILES) {
       let r;
       try {
-        r = await attempt(url, profile, ctrl.signal);
+        r = await attempt(url, profile, deadline);
       } catch (e) {
+        if (e instanceof AuditFetchError) throw e;
         if (e.name === "AbortError") {
           throw new AuditFetchError(
             "That site took longer than 10 seconds to respond. It may be slow or temporarily down — try again, or use the “paste HTML” option below.",
@@ -218,6 +229,72 @@ async function fetchPage(url) {
       { code: "fetch_failed" }
     );
   } finally {
+  }
+}
+
+// ---------- client-side rendering detection ----------
+// A single-page app serves a near-empty shell and builds the page in the
+// browser. Google renders JavaScript; most AI crawlers do not. So the shell is
+// genuinely what an answer engine sees — but reporting "you have no title" is
+// false if a title appears the moment JS runs. We detect the case, keep scoring
+// the served HTML (that IS the AEO reality), and say plainly what we're scoring.
+function detectClientRendered(html) {
+  const withoutCode = html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ");
+  const visibleText = strip(withoutCode);
+
+  const contentSignals =
+    (html.match(/<h1[^>]*>/gi) || []).length +
+    (html.match(/<h2[^>]*>/gi) || []).length +
+    (html.match(/<p(?=[\s>])[^>]*>/gi) || []).length +
+    (html.match(/<img[^>]*>/gi) || []).length;
+
+  const spaRoot = /<div[^>]+id=["'](root|__next|app|__nuxt)["']/i.test(html) ||
+    /data-reactroot/i.test(html);
+  const hasBundles = /<script[^>]+src=["'][^"']*\.(js|mjs)/i.test(html);
+
+  // Thin on rendered content, fat on JavaScript — the SPA signature.
+  const thin = contentSignals <= 3 && visibleText.length < 600;
+
+  return {
+    clientRendered: thin && hasBundles,
+    spaRoot,
+    visibleTextChars: visibleText.length,
+    contentSignals,
+  };
+}
+
+// The reader proxy renders JavaScript in markdown mode (html mode returns the
+// raw shell). Markdown loses markup — no meta tags, schema or alt attributes —
+// so we use it only as EVIDENCE of what exists post-render, never for scoring.
+async function fetchRenderedEvidence(url) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), PROXY_TIMEOUT_MS);
+  try {
+    const res = await fetch(`https://r.jina.ai/${url}`, {
+      signal: ctrl.signal,
+      headers: {
+        "x-return-format": "markdown",
+        "user-agent": "Mozilla/5.0 (compatible; GrowlocalBot/1.0; +https://growlocal.vercel.app/audit)",
+      },
+    });
+    if (!res.ok) return null;
+    const md = (await res.text()).slice(0, 400_000);
+    if (md.length < 200) return null;
+
+    const title = (md.match(/^Title:\s*(.+)$/m) || [])[1]?.trim() || null;
+    const body = md.replace(/^Title:.*$/m, "").replace(/^URL Source:.*$/m, "").replace(/^Markdown Content:/m, "");
+    const headings = (body.match(/^#{1,6}\s+\S/gm) || []).length;
+    const paragraphs = body
+      .split(/\n{2,}/)
+      .map((p) => p.replace(/^[#>\-*\s]+/, "").trim())
+      .filter((p) => p.length > 60 && !/^!?\[/.test(p)).length;
+
+    return { title, headings, paragraphs, chars: body.trim().length };
+  } catch {
+    return null;
+  } finally {
     clearTimeout(timer);
   }
 }
@@ -228,18 +305,28 @@ const check = (id, label, earned, max, fix = null) => ({
 });
 
 // ============ SEO (100) ============
-function auditSEO(html, url, schemas) {
+// `cr` = the page is client-side rendered, so every "missing" finding here is
+// a statement about the SERVED HTML, not about the page a human sees. The
+// wording changes accordingly — the score does not, because this is exactly
+// what a non-rendering crawler receives.
+function auditSEO(html, url, schemas, cr = false) {
   const c = [];
+  const served = cr ? " in the served HTML (it only appears after JavaScript runs)" : "";
+  const ssrFix = cr
+    ? ` This page builds itself in the browser, so crawlers that don't run JavaScript never see it. Server-render or pre-render this page (Next.js SSR/SSG, Nuxt, or prerender.io) so the markup ships in the HTML response.`
+    : "";
 
   // Title (12)
   const title = strip(grab(/<title[^>]*>([\s\S]*?)<\/title>/i, html) || "");
-  if (!title) c.push(check("seo_title", "Page has no <title> tag", 0, 12, `Add a <title> in <head>. Aim for 30-60 characters, lead with the primary keyword, end with your brand. Example: <title>Dental Implants in Ballygunge | Your Clinic</title>`));
+  if (!title) c.push(check("seo_title", `No <title> tag${served}`, 0, 12, `Add a <title> in <head>. Aim for 30-60 characters, lead with the primary keyword, end with your brand.${ssrFix}`));
   else if (title.length >= 30 && title.length <= 60) c.push(check("seo_title", `Title is ${title.length} chars — ideal length`, 12, 12));
   else c.push(check("seo_title", `Title is ${title.length} chars (ideal is 30-60)`, 6, 12, `Rewrite to 30-60 characters so Google doesn't truncate it. Current title: "${title.slice(0, 90)}${title.length > 90 ? "…" : ""}"`));
 
   // Meta description (10)
-  const desc = grab(/<meta[^>]+name=["']description["'][^>]*content=["']([^"']*)["']/i, html)
-    || grab(/<meta[^>]+content=["']([^"']*)["'][^>]*name=["']description["']/i, html);
+  const desc = grab(/<meta[^>]+name=["']description["'][^>]*content="([^"]*)"/i, html)
+    || grab(/<meta[^>]+name=["']description["'][^>]*content='([^']*)'/i, html)
+    || grab(/<meta[^>]+content="([^"]*)"[^>]*name=["']description["']/i, html)
+    || grab(/<meta[^>]+content='([^']*)'[^>]*name=["']description["']/i, html);
   if (!desc) c.push(check("seo_desc", "No meta description", 0, 10, `Add <meta name="description" content="..."> to <head>. 50-160 characters. Lead with the outcome the visitor gets, not a company boast.`));
   else if (desc.length >= 50 && desc.length <= 160) c.push(check("seo_desc", `Meta description is ${desc.length} chars — ideal length`, 10, 10));
   else c.push(check("seo_desc", `Meta description is ${desc.length} chars (ideal is 50-160)`, 5, 10, `Rewrite to 50-160 characters. Under 50 wastes the slot; over 160 gets cut off in results.`));
@@ -247,7 +334,7 @@ function auditSEO(html, url, schemas) {
   // H1 (12)
   const h1s = grabAll(/<h1[^>]*>([\s\S]*?)<\/h1>/gi, html).map(strip).filter(Boolean);
   if (h1s.length === 1) c.push(check("seo_h1", `Exactly one <h1>: "${h1s[0].slice(0, 70)}"`, 12, 12));
-  else if (h1s.length === 0) c.push(check("seo_h1", "No <h1> heading found", 0, 12, `Add exactly one <h1> describing what this page is about. It's the strongest on-page relevance signal you control.`));
+  else if (h1s.length === 0) c.push(check("seo_h1", `No <h1> heading${served}`, 0, 12, `Add exactly one <h1> describing what this page is about. It's the strongest on-page relevance signal you control.${ssrFix}`));
   else c.push(check("seo_h1", `${h1s.length} <h1> tags found — should be exactly one`, 4, 12, `Keep the single most important heading as <h1> and demote the rest to <h2>. Multiple H1s dilute the topical signal.`));
 
   // Heading hierarchy (6)
@@ -283,7 +370,7 @@ function auditSEO(html, url, schemas) {
   // Image alt text (10)
   const imgs = html.match(/<img[^>]*>/gi) || [];
   const withAlt = imgs.filter((i) => /\salt=["'][^"']*["']/i.test(i)).length;
-  if (imgs.length === 0) c.push(check("seo_alt", "No images on this page", 5, 10, `No images found. Visual content increases dwell time and gives you image-search surface area. Add photos of your work, team, or premises — with alt text.`));
+  if (imgs.length === 0) c.push(check("seo_alt", `No images${served}`, 5, 10, `No images found. Visual content increases dwell time and gives you image-search surface area. Add photos of your work, team, or premises — with alt text.${ssrFix}`));
   else if (withAlt / imgs.length >= 0.9) c.push(check("seo_alt", `${withAlt}/${imgs.length} images have alt text`, 10, 10));
   else c.push(check("seo_alt", `Only ${withAlt}/${imgs.length} images have alt text`, Math.round((withAlt / imgs.length) * 10), 10, `Add descriptive alt text to the remaining ${imgs.length - withAlt} image${imgs.length - withAlt === 1 ? "" : "s"}. Describe what's in the image, not "image1.jpg". Use alt="" only for purely decorative graphics.`));
 
@@ -295,8 +382,9 @@ function auditSEO(html, url, schemas) {
 }
 
 // ============ AEO (100) ============
-function auditAEO(html, schemas) {
+function auditAEO(html, schemas, cr = false) {
   const c = [];
+  const served = cr ? " in the served HTML (it only appears after JavaScript runs)" : "";
 
   // FAQPage schema (22)
   const faq = findType(schemas, "FAQPage");
@@ -315,16 +403,35 @@ function auditAEO(html, schemas) {
   else c.push(check("aeo_questions", "No question-format headings", 0, 18, `Convert your section headings into questions. Instead of "Our Services" use "What services do you offer?". Instead of "Pricing" use "How much does it cost?". This alone materially changes AI citation rates.`));
 
   // Direct answer pattern (14)
-  const paras = grabAll(/<p[^>]*>([\s\S]*?)<\/p>/gi, html).map(strip).filter((p) => p.length > 20);
-  const definitional = paras.slice(0, 5).some((p) => /^[^.!?]{15,180}\b(is|are|means|refers to|involves|includes)\b/i.test(p));
+  // `<p(?=[\s>])` so the tag must be exactly <p>; a bare `<p[^>]*>` also matches
+  // <path>, <picture> and <pre>, swallowing the nav and JSON-LD into one "paragraph".
+  const paras = grabAll(/<p(?=[\s>])[^>]*>([\s\S]*?)<\/p>/gi, html).map(strip).filter((p) => p.length > 20);
+  const definitional = paras.slice(0, 5).some((p) => /^[^.!?]{6,180}\b(is|are|means|refers to|involves|includes)\b/i.test(p));
   if (definitional) c.push(check("aeo_direct_answer", "Opens with a direct, definitional statement", 14, 14));
   else c.push(check("aeo_direct_answer", "No direct answer in the opening", 0, 14, `Start the page with a one-sentence definition in the pattern "<Thing> is <what it is>." AI systems preferentially quote this construction. Bury the marketing language below it.`));
 
   // Concise extractable paragraphs (12)
+  // A ratio alone rewards thin pages — 1 of 2 paragraphs is 50% but there is
+  // almost nothing there to quote. Full credit needs a real volume of
+  // extractable prose, not just a good percentage of a tiny sample.
+  const MIN_EXTRACTABLE = 5;
   const concise = paras.filter((p) => p.length >= 40 && p.length <= 320).length;
-  if (paras.length === 0) c.push(check("aeo_concise", "No paragraph content found", 0, 12, `The page has no substantive prose. AI engines can't cite what isn't there — add real written content answering customer questions.`));
-  else if (concise / paras.length >= 0.4) c.push(check("aeo_concise", `${concise}/${paras.length} paragraphs are cleanly extractable`, 12, 12));
-  else c.push(check("aeo_concise", `Only ${concise}/${paras.length} paragraphs are concise enough to extract`, 6, 12, `Break long paragraphs into 40-320 character chunks. AI answer engines lift self-contained sentences — a 600-word wall of text gets skipped in favour of a competitor's tight paragraph.`));
+  const ratio = paras.length ? concise / paras.length : 0;
+
+  if (paras.length === 0) {
+    c.push(check("aeo_concise", `No paragraph content${served}`, 0, 12, `The page has no substantive prose. AI engines can't cite what isn't there — add real written content answering customer questions.`));
+  } else if (concise >= MIN_EXTRACTABLE && ratio >= 0.4) {
+    c.push(check("aeo_concise", `${concise} cleanly extractable paragraphs (${concise}/${paras.length})`, 12, 12));
+  } else if (concise >= MIN_EXTRACTABLE) {
+    c.push(check("aeo_concise", `${concise} extractable, but only ${Math.round(ratio * 100)}% of ${paras.length} paragraphs`, 7, 12,
+      `You have enough content — it's the shape that's off. Break the long paragraphs into 40-320 character chunks so more of the page is quotable.`));
+  } else if (concise > 0) {
+    c.push(check("aeo_concise", `Only ${concise} extractable paragraph${concise === 1 ? "" : "s"} — too little to cite`, 4, 12,
+      `A page needs at least ${MIN_EXTRACTABLE} self-contained 40-320 character paragraphs before an answer engine has anything worth quoting. Add real answers to real customer questions.`));
+  } else {
+    c.push(check("aeo_concise", `No paragraph sits in the extractable 40-320 character range`, 0, 12,
+      `Rewrite your prose into self-contained 40-320 character paragraphs. Answer engines lift whole sentences — a wall of text gets skipped for a competitor's tighter one.`));
+  }
 
   // Author / E-E-A-T (12)
   const authored = schemas.some((s) => s?.author || s?.creator) || /<meta[^>]+name=["']author["']/i.test(html) || /\brel=["']author["']/i.test(html);
@@ -347,11 +454,37 @@ function auditAEO(html, schemas) {
 }
 
 // ============ GEO (100) ============
+// schema.org LocalBusiness and its common subtypes, plus the Organization
+// subtypes local practices use. Plain Organization doesn't count: it says
+// nothing about a physical location.
 const LOCAL_TYPES = [
-  "LocalBusiness", "Restaurant", "Hotel", "Store", "MedicalClinic", "Dentist", "Physician",
-  "MedicalOrganization", "ProfessionalService", "EducationalOrganization", "RealEstateAgent",
-  "AccountingService", "LegalService", "AutomotiveBusiness", "BeautySalon", "HealthAndBeautyBusiness",
-  "DaySpa", "ExerciseGym", "Bakery", "CafeOrCoffeeShop", "Pharmacy", "VeterinaryCare",
+  "LocalBusiness", "MedicalOrganization", "EducationalOrganization", "ProfessionalService",
+  // Food & lodging
+  "FoodEstablishment", "Restaurant", "Bakery", "BarOrPub", "Brewery", "CafeOrCoffeeShop", "FastFoodRestaurant",
+  "IceCreamShop", "Winery", "LodgingBusiness", "Hotel", "Motel", "Resort", "Hostel", "BedAndBreakfast", "Campground",
+  // Health & beauty
+  "MedicalBusiness", "MedicalClinic", "Dentist", "Physician", "Hospital", "Optician", "Pharmacy", "PhysicalTherapy",
+  "DiagnosticLab", "VeterinaryCare", "HealthAndBeautyBusiness", "BeautySalon", "HairSalon", "NailSalon", "DaySpa",
+  "TattooParlor", "HealthClub", "SportsActivityLocation", "ExerciseGym",
+  // Trades & home
+  "HomeAndConstructionBusiness", "Electrician", "GeneralContractor", "HVACBusiness", "HousePainter", "Locksmith",
+  "MovingCompany", "Plumber", "RoofingContractor",
+  // Professional & financial
+  "LegalService", "Attorney", "Notary", "AccountingService", "FinancialService", "InsuranceAgency", "BankOrCreditUnion",
+  "RealEstateAgent", "EmploymentAgency", "TravelAgency", "InternetCafe", "Library",
+  // Auto
+  "AutomotiveBusiness", "AutoDealer", "AutoRepair", "AutoBodyShop", "AutoPartsStore", "AutoRental", "AutoWash", "GasStation",
+  "MotorcycleDealer", "MotorcycleRepair",
+  // Retail
+  "Store", "BikeStore", "BookStore", "ClothingStore", "ComputerStore", "ConvenienceStore", "DepartmentStore",
+  "ElectronicsStore", "Florist", "FurnitureStore", "GardenStore", "GroceryStore", "HardwareStore", "HobbyShop",
+  "HomeGoodsStore", "JewelryStore", "LiquorStore", "MensClothingStore", "MobilePhoneStore", "MovieRentalStore",
+  "MusicStore", "OfficeEquipmentStore", "OutletStore", "PawnShop", "PetStore", "ShoeStore", "SportingGoodsStore",
+  "TireShop", "ToyStore", "WholesaleStore",
+  // Other local
+  "ChildCare", "DryCleaningOrLaundry", "EmergencyService", "EntertainmentBusiness", "GovernmentOffice", "Preschool",
+  "School", "RecyclingCenter", "SelfStorage", "ShoppingCenter", "TouristInformationCenter", "AnimalShelter",
+  "ArchiveOrganization", "RadioStation", "TelevisionStation",
 ];
 
 function auditGEO(html, schemas) {
@@ -384,11 +517,11 @@ function auditGEO(html, schemas) {
 
   // tel: link (12)
   if (/<a[^>]+href=["']tel:/i.test(html)) c.push(check("geo_tel_link", "Tap-to-call link present", 12, 12));
-  else c.push(check("geo_tel_link", "No tap-to-call link", 0, 12, `Add <a href="tel:+919876543210">Call us</a> in your header and footer. Most local searches happen on mobile, and a tap-to-call button is the shortest path from search to enquiry.`));
+  else c.push(check("geo_tel_link", "No tap-to-call link", 0, 12, `Add <a href="tel:+91XXXXXXXXXX">Call us</a> in your header and footer. Most local searches happen on mobile, and a tap-to-call button is the shortest path from search to enquiry.`));
 
   // Telephone in schema (6)
   if (biz?.telephone) c.push(check("geo_tel_schema", "Telephone in structured data", 6, 6));
-  else c.push(check("geo_tel_schema", "No telephone in schema", 0, 6, `Add "telephone": "+91-98765-43210" to your LocalBusiness schema in full international format.`));
+  else c.push(check("geo_tel_schema", "No telephone in schema", 0, 6, `Add "telephone": "+91-XXXXX-XXXXX" to your LocalBusiness schema in full international format.`));
 
   // Map presence (6)
   if (/(google\.[a-z.]+\/maps|maps\.app\.goo\.gl|goo\.gl\/maps|maps\.googleapis\.com|openstreetmap)/i.test(html)) {
@@ -407,11 +540,12 @@ function auditGEO(html, schemas) {
 }
 
 // ---------- scoring on already-fetched HTML ----------
-function scoreHtml(html, finalUrl, truncated, source) {
+function scoreHtml(html, finalUrl, truncated, source, rendering = null) {
   const schemas = parseJsonLd(html);
+  const cr = Boolean(rendering?.clientRendered);
   const groups = {
-    SEO: auditSEO(html, finalUrl, schemas),
-    AEO: auditAEO(html, schemas),
+    SEO: auditSEO(html, finalUrl, schemas, cr),
+    AEO: auditAEO(html, schemas, cr),
     GEO: auditGEO(html, schemas),
   };
 
@@ -445,6 +579,7 @@ function scoreHtml(html, finalUrl, truncated, source) {
     grade: overall >= 85 ? "A" : overall >= 70 ? "B" : overall >= 55 ? "C" : overall >= 40 ? "D" : "F",
     scores,
     priorities,
+    rendering,
     schemaTypes: [...new Set(schemas.flatMap(typesOf))].filter(Boolean),
     auditedAt: new Date().toISOString(),
   };
@@ -461,7 +596,26 @@ export async function runAudit(rawUrl) {
   }
 
   const { html, finalUrl, truncated, viaProxy } = await fetchPage(url);
-  return scoreHtml(html, finalUrl, truncated, viaProxy ? "proxy" : "fetch");
+
+  // If the served HTML is an empty shell, gather evidence of what the page
+  // actually contains once rendered — so the report can say "this exists, but
+  // crawlers never receive it" instead of the false "this doesn't exist".
+  const detection = detectClientRendered(html);
+  let rendering = null;
+  if (detection.clientRendered) {
+    const evidence = await fetchRenderedEvidence(finalUrl);
+    rendering = {
+      clientRendered: true,
+      servedHtmlChars: html.length,
+      servedContentSignals: detection.contentSignals,
+      rendered: evidence,
+      note: evidence
+        ? `This page is built in the browser. The HTML your server sends contains almost nothing — but once JavaScript runs the page has ${evidence.title ? "a title, " : ""}${evidence.headings} heading${evidence.headings === 1 ? "" : "s"} and ${evidence.paragraphs} paragraph${evidence.paragraphs === 1 ? "" : "s"}. Google runs JavaScript, so it sees the full page. Most AI crawlers (including the ones behind ChatGPT and Perplexity) do not — they see the empty shell scored below.`
+        : `This page is built in the browser: the HTML your server sends is an almost-empty shell. Google runs JavaScript and sees the full page; most AI crawlers do not, and see only what's scored below.`,
+    };
+  }
+
+  return scoreHtml(html, finalUrl, truncated, viaProxy ? "proxy" : "fetch", rendering);
 }
 
 // ---------- main: audit pasted HTML ----------

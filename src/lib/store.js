@@ -40,8 +40,14 @@ async function kvPipeline(commands) {
 }
 
 // ---------- FS backend ----------
+// Keys are namespaced with ":" (e.g. "concierge:client:abc"), but Windows
+// forbids ":" in filenames — so it's mapped to "__" rather than kept.
+function fsName(key) {
+  return key.replace(/:/g, "__").replace(/[^a-zA-Z0-9_-]/g, "_");
+}
+
 function fsPath(key) {
-  return path.join(DATA_DIR, `${key.replace(/[^a-zA-Z0-9:_-]/g, "_")}.json`);
+  return path.join(DATA_DIR, `${fsName(key)}.json`);
 }
 
 // ---------- public API ----------
@@ -89,7 +95,7 @@ export async function push(listKey, value) {
   }
   if (storeMode === "fs") {
     fs.mkdirSync(DATA_DIR, { recursive: true });
-    const f = path.join(DATA_DIR, `${listKey.replace(/[^a-zA-Z0-9:_-]/g, "_")}.jsonl`);
+    const f = path.join(DATA_DIR, `${fsName(listKey)}.jsonl`);
     fs.appendFileSync(f, JSON.stringify(value) + "\n");
     return true;
   }

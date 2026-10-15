@@ -34,13 +34,13 @@ export async function GET(req) {
     if (!res.ok || tok.error) {
       return NextResponse.redirect(new URL(`/app?oauth=error&reason=${encodeURIComponent(tok.error || "exchange_failed")}`, req.url));
     }
-    saveToken(state.uid, {
+    await saveToken(state.uid, {
       refresh_token: tok.refresh_token || null,
       access_token: tok.access_token || null,
       scope: tok.scope || null,
       granted_at: new Date().toISOString(),
     });
-    setGbpConnected(state.uid);
+    await setGbpConnected(state.uid);
     return NextResponse.redirect(new URL("/app?oauth=success", req.url));
   } catch {
     return NextResponse.redirect(new URL("/app?oauth=error&reason=network", req.url));

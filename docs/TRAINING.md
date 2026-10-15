@@ -15,7 +15,7 @@ Two separate products, at two very different stages of readiness. Do not blur th
 |---|---|---|
 | **Status** | **Live now.** Free, no signup. | **Not live.** Waitlist only. |
 | **What it does** | Scores any website 0–100 on three surfaces (SEO / AEO / GEO) | Would connect to a customer's real Google Business Profile via OAuth and run an AI agent to draft posts, review replies, FAQ content |
-| **What it needs to go live** | Nothing — it's shipped | A verified Google Cloud OAuth app (2–6 week Google review) + `ANTHROPIC_API_KEY` |
+| **What it needs to go live** | Nothing — it's shipped | A verified Google Cloud OAuth app (2–6 week Google review) + `GEMINI_API_KEY` |
 | **Where in the code** | `src/lib/audit.js`, `src/lib/ai-visibility.js` | `src/app/api/oauth/google/*`, `src/lib/agent.js` |
 
 **If a customer asks "can you manage my Google Business Profile today" — the honest answer is no, not yet.** The `/autopilot` page shows a waitlist form, not a working connect button, because `GOOGLE_OAUTH_CLIENT_ID` is unset in production. Selling this as live today is the single fastest way to create an angry customer. See §4 for exactly what this means for the word "GBP" in our own marketing.
@@ -199,8 +199,8 @@ Because every check is a deterministic rule against the HTML, "is this result co
 | Feature | Status |
 |---|---|
 | GBP Autopilot (real OAuth connection, AI-drafted posts/replies) | Waitlist only — Google hasn't verified our OAuth app |
-| Real AI-generated content in Autopilot actions | Falls back to labelled stub text without `ANTHROPIC_API_KEY` set |
-| Waitlist/comment persistence | Currently logs to server console; degrades to "email us to confirm" without a KV database attached |
+| Real AI-generated content in Autopilot actions | Falls back to labelled stub text without `GEMINI_API_KEY` set |
+| Waitlist/comment persistence | Live — Upstash Redis is connected in Production, Preview and Development |
 | User accounts / login | Magic-link auth exists in code but has no purpose yet since Autopilot isn't live |
 | Payment / subscriptions | Not built |
 

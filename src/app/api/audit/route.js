@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { runAudit, runAuditOnHtml, runAuditOnText } from "@/lib/audit";
+import { runGbpAudit } from "@/lib/gbp-audit";
+import { rateLimited } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,7 +15,32 @@ export async function POST(req) {
     return NextResponse.json({ error: "Send a JSON body." }, { status: 400 });
   }
 
-  const { url, html, text, mode } = body || {};
+  const { url, html, text, mode, link } = body || {};
+
+  // GBP profile mode — resolves and scores the live Google Business Profile.
+  // Stricter bucket: once GOOGLE_PLACES_API_KEY is set this calls a paid API
+  // per request, so it gets a tighter quota than the free website audit.
+  if (mode === "gbp") {
+    const blocked = await rateLimited(req, "audit-gbp", { limit: 5, windowSeconds: 600 });
+    if (blocked) return blocked;
+
+    if (!link || typeof link !== "string" || link.length > 2048) {
+      return NextResponse.json({ error: "Paste a Google Maps or Business Profile link." }, { status: 400 });
+    }
+    try {
+      return NextResponse.json(await runGbpAudit(link));
+    } catch (e) {
+      return NextResponse.json(
+        { error: e.message || "GBP audit failed.", code: e.code || null },
+        { status: e.code === "not_configured" ? 501 : 400 }
+      );
+    }
+  }
+
+  // URL / HTML / Text modes share one quota — same cost profile (a fetch,
+  // or CPU-bound parsing of a payload the caller controls the size of).
+  const blocked = await rateLimited(req, "audit", { limit: 10, windowSeconds: 600 });
+  if (blocked) return blocked;
 
   // Plain-text mode — content structure only, scored honestly.
   if (mode === "text" || (text && !html && !url)) {
@@ -55,7 +82,8 @@ export async function POST(req) {
         code: e.code || null,
         canPasteHtml: ["shielded", "timeout", "fetch_failed", "5xx"].includes(e.code),
       },
-      { status: 502 }
+      // Bad input (blocked address, unknown domain, 404) is the caller's to fix, not an upstream failure.
+      { status: ["blocked", "dns", "404", "not_html"].includes(e.code) ? 422 : 502 }
     );
   }
 }

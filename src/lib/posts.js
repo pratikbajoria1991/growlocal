@@ -13,6 +13,7 @@ export const POSTS = [
   {
     slug: "how-to-get-cited-by-chatgpt-and-perplexity",
     title: "How do I get my business cited by ChatGPT and Perplexity?",
+    seoTitle: "Get cited by ChatGPT and Perplexity",
     question: "How do I get my business cited by ChatGPT and Perplexity?",
     answer:
       "To get cited by an AI answer engine, publish content structured the way those systems extract it: a FAQ section with FAQPage schema, headings written as the questions customers actually type, and a one-sentence direct answer under each. AI systems lift self-contained sentences, so a tight 40-200 character answer beats a well-written paragraph almost every time.",
@@ -67,6 +68,7 @@ export const POSTS = [
   {
     slug: "local-business-not-showing-up-near-me-searches",
     title: "Why is my business not showing up in 'near me' searches?",
+    seoTitle: "Why you're missing from 'near me' searches",
     question: "Why is my business not showing up in 'near me' searches?",
     answer:
       "The most common cause is missing LocalBusiness schema. Without structured address, geo coordinates and areaServed fields, search engines and AI assistants have no machine-readable way to confirm where you are or which areas you serve — so you get filtered out of proximity queries before ranking is even considered.",
@@ -117,6 +119,7 @@ export const POSTS = [
   {
     slug: "what-is-geo-generative-engine-optimization",
     title: "What is GEO and is it different from AEO?",
+    seoTitle: "GEO vs AEO: what is the difference?",
     question: "What is GEO and is it different from AEO?",
     answer:
       "GEO (Generative Engine Optimization) is the practice of making your business legible and credible to generative AI systems. For local businesses it carries a second meaning too — geographic optimization, the structured signals that decide whether you appear for location-based queries. AEO is about format; GEO is about entity and place.",
@@ -161,6 +164,7 @@ export const POSTS = [
   {
     slug: "does-schema-markup-actually-help-rankings",
     title: "Does schema markup actually help rankings?",
+    seoTitle: "Does schema markup help rankings?",
     question: "Does schema markup actually help rankings?",
     answer:
       "Schema markup is not a direct ranking factor, and Google has said so repeatedly. What it does is make your content eligible for rich results, help search engines understand entities on your page with confidence, and give AI answer engines a clean structure to extract from. The measurable wins are click-through rate and AI citation, not position.",

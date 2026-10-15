@@ -44,7 +44,7 @@ export function AuditSkeleton({ stage }) {
         ))}
       </div>
 
-      <p className="mt-8 text-center text-sm text-forest-900/45">{stage}</p>
+      <p className="mt-8 text-center text-sm text-forest-900/65">{stage}</p>
     </div>
   );
 }

@@ -26,9 +26,9 @@ export default function Login() {
 
   return (
     <section className="max-w-md mx-auto px-5 sm:px-8 pt-16 sm:pt-24 pb-20">
-      <div className="text-[11px] uppercase tracking-[0.15em] text-forest-900/35 mb-3">Sign in or sign up</div>
+      <div className="text-[11px] uppercase tracking-[0.15em] text-forest-900/65 mb-3">Sign in or sign up</div>
       <h1 className="font-display text-3xl sm:text-4xl leading-tight mb-3">
-        One link. <span className="text-lime-600">No password.</span>
+        One link. <span className="text-indigo-600">No password.</span>
       </h1>
       <p className="text-forest-900/60 leading-relaxed mb-8">
         Enter your email and we&apos;ll send a one-time sign-in link. New here? Your account is created automatically on first use.
@@ -46,7 +46,7 @@ export default function Login() {
             data-lpignore="true"
             data-1p-ignore="true"
             suppressHydrationWarning
-            className="w-full px-4 py-3.5 rounded-xl border hairline bg-white outline-none focus:border-lime-500/60 transition-colors"
+            className="w-full px-4 py-3.5 rounded-xl border hairline bg-white outline-none focus:border-indigo-500/60 transition-colors"
           />
           <button
             type="submit"
@@ -59,18 +59,18 @@ export default function Login() {
         </form>
       ) : (
         <div className="rounded-2xl border hairline bg-white p-6">
-          <CheckCircle2 className="w-5 h-5 text-lime-600 mb-3" />
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 mb-3" />
           <div className="font-medium mb-1.5">Link sent to {email}</div>
           <p className="text-sm text-forest-900/60 leading-relaxed">
             Click it within 30 minutes to sign in. Check spam if it doesn&apos;t arrive.
           </p>
           {state.devLink && (
-            <div className="mt-4 p-3 rounded-lg bg-lime-500/[0.08] border border-lime-500/25">
-              <div className="text-[10px] uppercase tracking-wider text-lime-600 font-semibold mb-1">Dev mode — no mail service configured</div>
+            <div className="mt-4 p-3 rounded-lg bg-emerald-500/[0.08] border border-emerald-500/25">
+              <div className="text-[10px] uppercase tracking-wider text-emerald-600 font-semibold mb-1">Dev mode — no mail service configured</div>
               <a href={state.devLink} className="text-xs text-forest-900/70 underline break-all hover:text-forest-900">{state.devLink}</a>
             </div>
           )}
-          <button onClick={() => setState({ loading: false, sent: false, error: null, devLink: null })} className="mt-4 text-sm text-forest-900/45 hover:text-forest-900">
+          <button onClick={() => setState({ loading: false, sent: false, error: null, devLink: null })} className="mt-4 text-sm text-forest-900/65 hover:text-forest-900">
             ← Use a different email
           </button>
         </div>
@@ -78,13 +78,13 @@ export default function Login() {
 
       <div className="mt-8 p-4 rounded-xl bg-forest-900/[0.03] border hairline">
         <p className="text-sm text-forest-900/60 leading-relaxed">
-          Looking for <strong className="text-forest-900">GBP Autopilot</strong>? We&apos;re onboarding in batches while Google reviews our Business Profile access.{" "}
-          <Link href="/autopilot" className="text-lime-600 underline">Join the waitlist</Link> — or run the{" "}
-          <Link href="/audit" className="text-lime-600 underline">free audit</Link>, which needs no account at all.
+          Sign in to see the work we&apos;ve done for your business and approve changes. Not a client yet?{" "}
+          <Link href="/managed#apply" className="text-indigo-600 underline">Apply for a founding slot</Link> — or run the{" "}
+          <Link href="/audit" className="text-indigo-600 underline">free audit</Link>, which needs no account at all.
         </p>
       </div>
 
-      <p className="text-xs text-forest-900/40 mt-6 leading-relaxed">
+      <p className="text-xs text-forest-900/65 mt-6 leading-relaxed">
         By signing in you agree to our <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy Policy</Link>.
       </p>
     </section>

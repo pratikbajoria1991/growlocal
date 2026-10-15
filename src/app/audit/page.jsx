@@ -1,10 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Globe, Code2, FileText, ArrowRight, AlertCircle, Loader2, Info } from "lucide-react";
+import { Globe, Code2, FileText, MapPin, ArrowRight, AlertCircle, Loader2, Info } from "lucide-react";
 import { AuditReport } from "@/components/AuditReport";
 import { AuditSkeleton } from "@/components/AuditSkeleton";
-import { AUDIT_CATEGORIES } from "@/lib/brand";
+import { WEBSITE_AUDIT_CATEGORIES, AUDIT_CATEGORIES } from "@/lib/brand";
+import { FaqSection } from "@/components/FaqSection";
+import { AUDIT_FAQ, AUDIT_STEPS } from "@/lib/page-faq";
 
 // Narrating the actual steps makes a 3-second wait feel accounted for.
 const STAGES = [
@@ -21,6 +23,7 @@ const TABS = [
   { id: "url", label: "URL", icon: Globe, hint: "We fetch the live page and score all three surfaces." },
   { id: "html", label: "HTML", icon: Code2, hint: "Paste page source. Same full audit, no fetch needed — works behind any firewall." },
   { id: "text", label: "Text Content", icon: FileText, hint: "Paste plain copy. Scores content structure only — schema and meta tags aren't present in raw text." },
+  { id: "gbp", label: "GBP Profile", icon: MapPin, hint: "Paste a Google Maps share link. We score your actual live Business Profile, not your website." },
 ];
 
 export default function AuditPage() {
@@ -28,11 +31,21 @@ export default function AuditPage() {
   const [url, setUrl] = useState("");
   const [html, setHtml] = useState("");
   const [text, setText] = useState("");
+  const [link, setLink] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [canPaste, setCanPaste] = useState(false);
   const [stage, setStage] = useState(STAGES[0]);
+
+  // Hero hand-off: /audit?url=… or /audit?link=… starts the audit straight away.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const u = q.get("url"), l = q.get("link");
+    if (u) { setTab("url"); setUrl(u); run({ url: u.trim() }); }
+    else if (l) { setTab("gbp"); setLink(l); run({ link: l.trim(), mode: "gbp" }); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Advance the stage caption while the request is in flight.
   useEffect(() => {
@@ -73,17 +86,19 @@ export default function AuditPage() {
     if (tab === "url" && url.trim()) run({ url: url.trim() });
     if (tab === "html" && html.trim().length >= 50) run({ html, url: url.trim() });
     if (tab === "text" && text.trim().length >= 120) run({ text, mode: "text" });
+    if (tab === "gbp" && link.trim()) run({ link: link.trim(), mode: "gbp" });
   }
 
   function reset() {
     setResult(null); setError(null); setCanPaste(false);
-    setUrl(""); setHtml(""); setText("");
+    setUrl(""); setHtml(""); setText(""); setLink("");
   }
 
   const canSubmit =
     (tab === "url" && url.trim().length > 3) ||
     (tab === "html" && html.trim().length >= 50) ||
-    (tab === "text" && text.trim().length >= 120);
+    (tab === "text" && text.trim().length >= 120) ||
+    (tab === "gbp" && link.trim().length > 3);
 
   if (result) return <AuditReport result={result} onReset={reset} />;
   if (loading) return <AuditSkeleton stage={stage} />;
@@ -97,9 +112,9 @@ export default function AuditPage() {
         <div className="relative max-w-3xl mx-auto px-5 sm:px-8 pt-14 sm:pt-20 pb-12">
           <motion.div
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-lime-500/12 border border-lime-500/25 text-xs text-lime-700 font-medium mb-6"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/12 border border-indigo-500/25 text-xs text-indigo-700 font-medium mb-6"
           >
-            <span className="w-1.5 h-1.5 bg-lime-500 rounded-full animate-pulse" aria-hidden="true" />
+            <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse" aria-hidden="true" />
             Free · No signup · Results in seconds
           </motion.div>
 
@@ -107,7 +122,7 @@ export default function AuditPage() {
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
             className="font-display text-[2.5rem] sm:text-6xl leading-[1.03] tracking-[-0.035em] mb-5 text-balance"
           >
-            Check your <span className="text-lime-600">visibility score</span>
+            Check your <span className="text-indigo-600">visibility score</span>
           </motion.h1>
 
           <motion.p
@@ -123,7 +138,7 @@ export default function AuditPage() {
             className="rounded-4xl border hairline bg-white shadow-lift overflow-hidden"
           >
             {/* Tabs */}
-            <div role="tablist" aria-label="Audit input type" className="grid grid-cols-3 border-b hairline">
+            <div role="tablist" aria-label="Audit input type" className="grid grid-cols-4 border-b hairline">
               {TABS.map((t) => {
                 const on = tab === t.id;
                 return (
@@ -133,16 +148,16 @@ export default function AuditPage() {
                     aria-selected={on}
                     onClick={() => { setTab(t.id); setError(null); }}
                     className={`relative px-3 py-3.5 text-sm font-medium inline-flex items-center justify-center gap-2 transition-colors ${
-                      on ? "text-forest-900" : "text-forest-900/45 hover:text-forest-900/70 hover:bg-forest-900/[0.02]"
+                      on ? "text-forest-900" : "text-forest-900/65 hover:text-forest-900/70 hover:bg-forest-900/[0.02]"
                     }`}
                   >
                     <t.icon className="w-4 h-4" aria-hidden="true" />
                     <span className="hidden sm:inline">{t.label}</span>
-                    <span className="sm:hidden">{t.id === "text" ? "Text" : t.label}</span>
+                    <span className="sm:hidden">{t.id === "text" ? "Text" : t.id === "gbp" ? "GBP" : t.label}</span>
                     {on && (
                       <motion.span
                         layoutId="tab-underline"
-                        className="absolute left-0 right-0 -bottom-px h-0.5 bg-lime-500"
+                        className="absolute left-0 right-0 -bottom-px h-0.5 bg-indigo-500"
                       />
                     )}
                   </button>
@@ -159,9 +174,9 @@ export default function AuditPage() {
                     onChange={(e) => setUrl(e.target.value)}
                     placeholder="https://example.com/your-page"
                     disabled={loading} suppressHydrationWarning
-                    className="w-full px-4 py-3.5 rounded-xl border hairline bg-canvas-50 outline-none focus:border-lime-500/60 text-base transition-colors"
+                    className="w-full px-4 py-3.5 rounded-xl border hairline bg-canvas-50 outline-none focus:border-indigo-500/60 text-base transition-colors"
                   />
-                  <p className="text-xs text-forest-900/45 mt-2">Enter the full URL of the page you want to analyse.</p>
+                  <p className="text-xs text-forest-900/65 mt-2">Enter the full URL of the page you want to analyse.</p>
                 </>
               )}
 
@@ -173,9 +188,9 @@ export default function AuditPage() {
                     onChange={(e) => setHtml(e.target.value)}
                     placeholder={"<!DOCTYPE html>\n<html lang=\"en\">\n  <head>…"}
                     disabled={loading} suppressHydrationWarning
-                    className="w-full px-4 py-3 rounded-xl border hairline bg-canvas-50 outline-none focus:border-lime-500/60 font-mono text-[11px] leading-relaxed resize-y transition-colors"
+                    className="w-full px-4 py-3 rounded-xl border hairline bg-canvas-50 outline-none focus:border-indigo-500/60 font-mono text-[11px] leading-relaxed resize-y transition-colors"
                   />
-                  <p className="text-xs text-forest-900/45 mt-2">
+                  <p className="text-xs text-forest-900/65 mt-2">
                     Open your page, press <kbd className="px-1.5 py-0.5 rounded bg-forest-900/5 border hairline font-mono text-[10px]">Ctrl+U</kbd> for source,
                     select all and paste. Full three-surface audit, identical to the URL mode.
                   </p>
@@ -190,9 +205,9 @@ export default function AuditPage() {
                     onChange={(e) => setText(e.target.value)}
                     placeholder="Paste your page copy here — headings and paragraphs as they appear to a reader."
                     disabled={loading} suppressHydrationWarning
-                    className="w-full px-4 py-3 rounded-xl border hairline bg-canvas-50 outline-none focus:border-lime-500/60 text-sm leading-relaxed resize-y transition-colors"
+                    className="w-full px-4 py-3 rounded-xl border hairline bg-canvas-50 outline-none focus:border-indigo-500/60 text-sm leading-relaxed resize-y transition-colors"
                   />
-                  <p className="text-xs text-forest-900/45 mt-2 flex items-start gap-1.5">
+                  <p className="text-xs text-forest-900/65 mt-2 flex items-start gap-1.5">
                     <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" aria-hidden="true" />
                     Scores content structure only. Schema, meta tags and local signals aren&apos;t present in plain text, so we
                     don&apos;t pretend to grade them.
@@ -200,11 +215,33 @@ export default function AuditPage() {
                 </>
               )}
 
+              {tab === "gbp" && (
+                <>
+                  <label htmlFor="a-gbp" className="sr-only">Google Maps / Business Profile link</label>
+                  <input
+                    id="a-gbp" type="text" inputMode="url" value={link}
+                    onChange={(e) => setLink(e.target.value)}
+                    placeholder="https://maps.app.goo.gl/… or a google.com/maps/place/… link"
+                    disabled={loading} suppressHydrationWarning
+                    className="w-full px-4 py-3.5 rounded-xl border hairline bg-canvas-50 outline-none focus:border-violet-500/60 text-base transition-colors"
+                  />
+                  <p className="text-xs text-forest-900/65 mt-2 flex items-start gap-1.5">
+                    <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" aria-hidden="true" />
+                    Open your listing in Google Maps → Share → Copy link, and paste it here. This scores your actual live
+                    profile via Google&apos;s Places API — not your website.
+                  </p>
+                </>
+              )}
+
               <button
                 type="submit" disabled={loading || !canSubmit}
-                className="w-full mt-4 px-5 py-3.5 rounded-xl bg-forest-900 text-canvas-50 font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-35 disabled:cursor-not-allowed hover:bg-forest-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime-600 transition-colors"
+                className="w-full mt-4 px-5 py-3.5 rounded-xl btn-premium text-white font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-35 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
-                {loading ? <><Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> Analysing…</> : <>Analyse my page <ArrowRight className="w-4 h-4" aria-hidden="true" /></>}
+                {loading
+                  ? <><Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> Analysing…</>
+                  : tab === "gbp"
+                    ? <>Score my GBP profile <ArrowRight className="w-4 h-4" aria-hidden="true" /></>
+                    : <>Analyse my page <ArrowRight className="w-4 h-4" aria-hidden="true" /></>}
               </button>
 
               <AnimatePresence>
@@ -233,7 +270,7 @@ export default function AuditPage() {
               </AnimatePresence>
 
               {tab === "url" && (
-                <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-forest-900/45">
+                <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-forest-900/65">
                   <span>Try:</span>
                   {SAMPLES.map((s) => (
                     <button key={s} type="button" onClick={() => setUrl(s)} className="px-2.5 py-1 rounded-full bg-forest-900/5 hover:bg-forest-900/10 transition-colors">
@@ -245,14 +282,16 @@ export default function AuditPage() {
             </form>
           </motion.div>
 
-          <p className="text-xs text-forest-900/40 mt-3 text-center">{active.hint}</p>
+          <p className="text-xs text-forest-900/65 mt-3 text-center">{active.hint}</p>
         </div>
       </section>
 
-      <section className="max-w-5xl mx-auto px-5 sm:px-8 pb-20">
-        <h2 className="text-[11px] uppercase tracking-[0.15em] text-forest-900/35 mb-4 text-center">What we score</h2>
+      <section className="max-w-5xl mx-auto px-5 sm:px-8 pb-14">
+        <h2 className="text-[11px] uppercase tracking-[0.15em] text-forest-900/65 mb-4 text-center">
+          What we score on the URL / HTML / Text tabs
+        </h2>
         <div className="grid md:grid-cols-3 gap-4">
-          {Object.entries(AUDIT_CATEGORIES).map(([k, m], i) => (
+          {Object.entries(WEBSITE_AUDIT_CATEGORIES).map(([k, m], i) => (
             <motion.article
               key={k}
               initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.07 }}
@@ -268,6 +307,44 @@ export default function AuditPage() {
           ))}
         </div>
       </section>
+
+      <section className="max-w-5xl mx-auto px-5 sm:px-8 pb-20">
+        <h2 className="text-[11px] uppercase tracking-[0.15em] text-forest-900/65 mb-4 text-center">
+          …and separately, what we score on the GBP Profile tab
+        </h2>
+        <motion.article
+          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+          className="rounded-4xl border hairline bg-white p-6"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-[11px] uppercase tracking-[0.15em] font-semibold" style={{ color: AUDIT_CATEGORIES.GBP.color }}>
+              {AUDIT_CATEGORIES.GBP.tag}
+            </span>
+            <span className="text-[10px] uppercase tracking-wider text-forest-900/30">100 pts</span>
+          </div>
+          <h3 className="font-display text-lg mb-2">{AUDIT_CATEGORIES.GBP.name}</h3>
+          <p className="text-sm text-forest-900/60 leading-relaxed">{AUDIT_CATEGORIES.GBP.description}</p>
+        </motion.article>
+      </section>
+
+      <section className="max-w-3xl mx-auto px-5 sm:px-8 pb-14">
+        <h2 className="font-display text-3xl sm:text-4xl leading-[1.05] tracking-[-0.03em] mb-8 text-balance">
+          How does the audit work?
+        </h2>
+        <ol className="space-y-5">
+          {AUDIT_STEPS.map((s, i) => (
+            <li key={s.name} className="flex gap-4">
+              <span className="font-display text-xl text-indigo-600 w-6 shrink-0" aria-hidden="true">{i + 1}</span>
+              <div>
+                <h3 className="font-display text-lg leading-snug mb-1">{s.name}</h3>
+                <p className="text-sm text-forest-900/65 leading-relaxed">{s.text}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <FaqSection items={AUDIT_FAQ} className="max-w-3xl mx-auto px-5 sm:px-8 pb-20 pt-4 border-t hairline" />
     </>
   );
 }

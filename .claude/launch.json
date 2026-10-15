@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "growlocal-dev-uat",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["next", "dev", "-p", "3402"],
+      "port": 3402
+    }
+  ]
+}

@@ -1,38 +1,31 @@
 // Growlocal brand + product config. Single source of truth.
+//
+// Positioning: Growlocal replaces the need to hire a local marketing agency.
+// The customer is the business owner, never an agency. We sell the outcome —
+// "your local presence is handled" — not software the owner has to operate.
 
 export const BRAND = {
   name: "Growlocal",
-  tagline: "Get found on Google, Maps, and AI.",
+  tagline: "Your local marketing, handled.",
   pitch:
-    "Growlocal audits your website for SEO, AEO and GEO — then runs your Google Business Profile on autopilot with an AI agent.",
+    "Growlocal is a done-for-you local marketing service. We run your Google Business Profile, review replies, website SEO and AI search visibility every week — so you don't need to hire an agency.",
   // One-sentence definition, written to be lifted verbatim by an answer engine.
   // Used on-page. Too long for a meta description — see metaDescription below.
   definition:
-    "Growlocal is a free website audit tool that scores any page out of 100 on SEO, Answer Engine Optimization (AEO) and Generative Engine Optimization (GEO), then tells you exactly how to fix each gap.",
+    "Growlocal is a done-for-you local marketing service for business owners: we run your Google Business Profile, review replies, website SEO and AI search visibility every week, and report results from your real Google numbers — no agency, no dashboard to learn.",
   // 50-160 chars, per the rule our own SEO audit enforces.
   metaDescription:
-    "Free website audit scoring your page out of 100 on SEO, AEO and GEO — with the exact fix for every gap. No signup.",
+    "Done-for-you local marketing: we run your Google profile, reviews, website SEO and AI visibility. No agency needed. Start with a free audit.",
   url: process.env.NEXT_PUBLIC_APP_URL || "https://growlocal.vercel.app",
   email: "hello@growlocal.app",
   supportEmail: "support@growlocal.app",
   country: "India",
 };
 
-// Real, verifiable business details. These power our own LocalBusiness schema —
-// the same fields the GEO audit checks for on customer sites.
+// Business details that power our own Organization schema.
 export const ORG = {
   founder: "Pratik Bajoria",
-  telephone: "+91-98765-43210",
-  telHref: "+919876543210",
-  streetAddress: "Ballygunge Circular Road",
-  addressLocality: "Kolkata",
-  addressRegion: "West Bengal",
-  postalCode: "700019",
-  latitude: 22.5405,
-  longitude: 88.3648,
-  opens: "10:00",
-  closes: "19:00",
-  mapUrl: "https://www.google.com/maps/search/?api=1&query=22.5405,88.3648",
+  // No public phone or street address is published until real ones are added.
   areaServed: ["India", "Kolkata", "Mumbai", "Delhi", "Bengaluru", "Hyderabad", "Chennai", "Pune"],
   sameAs: [
     "https://github.com/pratikbajoria1991/growlocal",
@@ -40,87 +33,148 @@ export const ORG = {
   ],
 };
 
-// The two products. Everything on the site maps to one of these.
+// What the service does, split by who has to act. This is the service
+// contract in plain language — it renders on /managed and backs the ledger's
+// risk tiers in src/lib/ledger-types.js. Keep the two in step.
+export const AUTONOMY = {
+  weDo: [
+    "Weekly posts on your Google Business Profile",
+    "Replies to positive reviews",
+    "Services, products and attributes on your profile",
+    "FAQ and schema markup on your website",
+    "Directory listings, kept consistent with your profile",
+  ],
+  youApprove: [
+    "Business name, category, address, hours or description",
+    "Replies to negative or health-related reviews",
+    "New or rewritten pages and articles on your website",
+  ],
+  weNever: [
+    "Buy, write or ask for fake reviews",
+    "Promise a ranking, lead count or revenue number",
+    "Ask for your Google password",
+    "Use tactics that break Google's guidelines",
+  ],
+};
+
+// The products. Everything on the site maps to one of these.
+//
+// `status` is load-bearing, not decoration. Every claim in `bullets` must be
+// something we actually deliver today. Anything we intend to build goes in
+// `planned` and renders as "planned", never as a feature.
 export const PRODUCTS = [
   {
     id: "audit",
-    name: "Visibility Audit",
+    name: "Free visibility audit",
     href: "/audit",
-    headline: "Score any website for SEO, AEO and GEO",
+    status: "live",
+    headline: "See what's costing you customers",
     blurb:
-      "Paste a URL. We fetch the page, parse the HTML, and grade it across the three surfaces that decide whether customers can find you — traditional search, AI answer engines, and local/generative search.",
+      "Paste your website. In seconds you see how visible you are on Google, on Maps, and in AI answers like ChatGPT — and what's missing.",
     bullets: [
-      "Three separate scores out of 100",
-      "Every finding shows exactly how to fix it",
-      "Runs in under 5 seconds, no signup",
+      "Scores for SEO, AEO and GEO out of 100",
+      "Every gap explained in plain language",
+      "Free, no signup",
     ],
     cta: "Run a free audit",
   },
   {
-    id: "autopilot",
-    name: "GBP Autopilot",
-    href: "/autopilot",
-    headline: "Put your Google Business Profile on autopilot",
+    id: "managed",
+    name: "Growlocal Managed",
+    href: "/managed",
+    status: "founding",
+    statusNote: "Taking founding clients — limited slots",
+    headline: "We do the work an agency would. You run your business.",
     blurb:
-      "Connect your Google Business Profile once. An AI agent drafts your weekly posts, replies to every review, builds your FAQ, and ships a monthly performance report. You approve, it publishes.",
+      "Every week we update your Google profile, reply to reviews and fix your website for Google and AI search. You approve only the changes that matter, on WhatsApp, and get a monthly report from your real Google numbers.",
     bullets: [
-      "Weekly GBP posts drafted automatically",
-      "Every review answered within 48 hours",
-      "Monthly report with specific next actions",
+      "Weekly Google Business Profile posts and updates",
+      "Review replies — sensitive ones only with your OK",
+      "FAQ and schema added to your website",
+      "Monthly report: calls, directions, website clicks, profile views",
     ],
-    cta: "Join the waitlist",
+    planned: [
+      "Instant publishing through Google's API (awaiting Google's approval of our app)",
+      "Map ranking tracked across your neighbourhood",
+    ],
+    cta: "Apply for a founding slot",
+  },
+];
+
+// Proposals quote a tier from how many issues the proposal found — more to
+// fix, more work every week. Thresholds and prices are business decisions;
+// change them here and every proposal, page and schema follows.
+export const PROPOSAL_TIERS = [
+  {
+    id: "essentials",
+    name: "Essentials",
+    maxIssues: 6,
+    price: "₹4,999",
+    priceNumeric: 4999,
+    pitch: "Your presence is mostly in shape. We close the remaining gaps and keep everything current every week.",
+  },
+  {
+    id: "growth",
+    name: "Growth",
+    maxIssues: Infinity,
+    price: "₹9,999",
+    priceNumeric: 9999,
+    pitch: "You have real ground to make up on nearby competitors. We work through the gaps in priority order, every week.",
   },
 ];
 
 export const PLANS = [
   {
     id: "free",
-    name: "Free",
+    name: "Free audit",
     price: "₹0",
     cadence: "forever",
-    tagline: "Audit any website, as often as you like.",
+    status: "live",
+    tagline: "Find out what's costing you customers. As often as you like.",
     features: [
       "Unlimited SEO / AEO / GEO audits",
-      "Full findings with fix instructions",
-      "No signup required",
+      "Google Business Profile score from your Maps link",
+      "Every gap explained, no signup",
     ],
     cta: "Run an audit",
     href: "/audit",
   },
   {
-    id: "autopilot",
-    name: "Autopilot",
-    price: "₹4,999",
+    id: "managed",
+    name: "Managed",
+    price: "From ₹4,999",
     priceNumeric: 4999,
-    cadence: "per month",
-    tagline: "One Google Business Profile, fully managed by AI.",
+    cadence: "per location / month",
+    status: "founding",
+    tagline: "Your local marketing, done for you every week. Essentials ₹4,999 or Growth ₹9,999 — your free proposal shows which fits, based on how much there is to fix.",
     features: [
-      "Everything in Free",
-      "1 Google Business Profile connected",
-      "8 GBP posts drafted per month",
-      "Unlimited AI review replies",
-      "FAQ + schema generation",
-      "Monthly performance report",
-      "Email support",
+      "8 Google Business Profile posts a month",
+      "Replies to every new review",
+      "Services, attributes and photos kept current",
+      "FAQ + schema added to your website",
+      "Directory listings built and kept consistent",
+      "Monthly results report from your Google numbers",
+      "Approvals and updates on WhatsApp",
     ],
-    cta: "Join the waitlist",
-    href: "/autopilot",
+    planned: [
+      "Instant publishing via Google's API",
+      "Neighbourhood map-rank tracking",
+    ],
+    cta: "Get my free proposal",
+    href: "/proposal",
     featured: true,
   },
   {
-    id: "agency",
-    name: "Agency",
-    price: "₹14,999",
-    priceNumeric: 14999,
-    cadence: "per month",
-    tagline: "Up to 10 profiles. Built for multi-location and agencies.",
+    id: "multi",
+    name: "Multi-location",
+    price: "Custom",
+    cadence: "per location",
+    status: "talk",
+    tagline: "Clinics, salons and restaurants with several branches — one owner, every location handled.",
     features: [
-      "Everything in Autopilot",
-      "Up to 10 Google Business Profiles",
-      "Bulk audit + export (CSV)",
-      "White-label audit reports",
-      "Competitor tracking",
-      "Priority support",
+      "Everything in Managed, for each location",
+      "One monthly report across all branches",
+      "One WhatsApp thread for approvals",
     ],
     cta: "Talk to us",
     href: "/contact",
@@ -152,6 +206,26 @@ export const AUDIT_CATEGORIES = {
       "LocalBusiness schema, geo coordinates, areaServed, opening hours, tap-to-call links, and location signals in your copy. What makes you show up for 'near me' searches.",
     color: "#f59e0b",
   },
+  // Scored separately, from a Google Maps link rather than a website — the
+  // three categories above judge what your site says about your business;
+  // this judges the live Google Business Profile a customer actually sees.
+  GBP: {
+    tag: "GBP",
+    name: "Google Business Profile",
+    short: "Your actual live listing on Google Maps",
+    description:
+      "Operational status, category, website and phone links, address, hours, rating, review volume and recency, and photo coverage — read directly from your live Google Business Profile via Google's Places API.",
+    color: "#a78bfa",
+  },
+};
+
+// The three website-audit categories, kept separate from AUDIT_CATEGORIES.GBP
+// so marketing copy that talks about "three surfaces" stays accurate — a
+// URL/HTML/Text audit never touches the live Business Profile.
+export const WEBSITE_AUDIT_CATEGORIES = {
+  SEO: AUDIT_CATEGORIES.SEO,
+  AEO: AUDIT_CATEGORIES.AEO,
+  GEO: AUDIT_CATEGORIES.GEO,
 };
 
 // Written as questions people actually type, with answers short enough for an
@@ -159,59 +233,59 @@ export const AUDIT_CATEGORIES = {
 export const HOME_FAQ = [
   {
     q: "What is Growlocal?",
-    a: "Growlocal is a free website audit tool that scores any page out of 100 on SEO, Answer Engine Optimization (AEO) and Generative Engine Optimization (GEO), then tells you exactly how to fix each gap. It also offers GBP Autopilot, an AI agent that manages your Google Business Profile.",
+    a: "Growlocal is a done-for-you local marketing service for business owners. We run your Google Business Profile, review replies, website SEO and AI search visibility every week, and report results from your real Google numbers. It replaces hiring a local marketing agency.",
   },
   {
-    q: "How do I check if my website is visible to AI search?",
-    a: "Paste your URL into Growlocal's free audit. It checks the specific signals AI answer engines rely on — FAQPage schema, question-format headings, direct answer patterns, author metadata and extractable paragraph length — and returns an AEO score out of 100 with a fix for every gap.",
+    q: "Is Growlocal an agency or software?",
+    a: "Neither, exactly. Like an agency, we do the work — you don't log in to operate anything. Unlike an agency, the work is planned and tracked by software, every change is logged, and results are measured from your own Google Performance numbers rather than activity reports.",
   },
   {
-    q: "Is the Growlocal audit really free?",
-    a: "Yes. The audit is free with no signup, no card and no usage limit. You only pay if you want GBP Autopilot, where an AI agent drafts your Google Business Profile posts and review replies for ₹4,999 per month.",
+    q: "What do I have to do?",
+    a: "Very little. Add us as a Manager on your Google Business Profile, answer a few questions about your services, and reply on WhatsApp when a change needs your OK — like editing your business hours or replying to a negative review. Sending us a few photos a month helps.",
+  },
+  {
+    q: "How do you access my Google Business Profile without my password?",
+    a: "You add us as a Manager from your own Business Profile settings — a standard Google feature. We never ask for your Google password, and you can remove our access from the same screen at any time.",
+  },
+  {
+    q: "Do you guarantee rankings or leads?",
+    a: "No, and nobody honestly can. We commit to doing the work every week and showing you exactly what changed — calls, direction requests, website clicks and profile views from your Google Performance data, before and after.",
+  },
+  {
+    q: "How much does Growlocal cost?",
+    a: "The visibility audit and growth proposal are free. Growlocal Managed is ₹4,999 (Essentials) or ₹9,999 (Growth) per location per month plus GST, depending on how much there is to fix — your proposal shows which. No long contract.",
   },
   {
     q: "What is the difference between SEO, AEO and GEO?",
     a: "SEO optimises for a ranking position on Google's results page. AEO (Answer Engine Optimization) optimises to be the source an AI quotes inside a generated answer. GEO (Generative and Geographic Optimization) covers both generative-AI visibility and local signals like LocalBusiness schema that decide whether you appear for 'near me' searches.",
   },
   {
-    q: "How long does an audit take?",
-    a: "Under five seconds for most sites. Growlocal fetches the page, parses the HTML and runs roughly 30 weighted checks. If a site blocks automated requests, it retries through a reader proxy automatically.",
-  },
-  {
-    q: "Do I need to install anything on my website?",
-    a: "No. Growlocal reads your page's public HTML the same way Google does. There is no script to embed, no plugin to install and no access to grant.",
-  },
-  {
-    q: "Which businesses benefit most from AEO and GEO?",
-    a: "Local businesses where customers search before buying — clinics, dentists, restaurants, hotels, salons, gyms, diagnostic labs, real-estate agents and professional services. These are the queries AI assistants answer by naming two or three specific businesses.",
-  },
-  {
-    q: "Can Growlocal fix the issues it finds?",
-    a: "The audit gives you copy-and-paste instructions for every finding, so you or your developer can fix them directly. GBP Autopilot goes further for Google Business Profile work, drafting posts, review replies and FAQ schema for your approval.",
+    q: "Which businesses is Growlocal for?",
+    a: "Local businesses where customers search before they visit — clinics, dentists, diagnostic labs, restaurants, salons, gyms, hotels and professional services. These are the searches Google Maps and AI assistants answer by naming two or three specific businesses.",
   },
 ];
 
 // Ordered steps, also emitted as HowTo schema.
 export const HOW_IT_WORKS = [
-  { name: "Paste your website URL", text: "Enter any page address on the free audit. No account, no card, no script to install." },
-  { name: "Growlocal fetches and parses the page", text: "It reads your public HTML exactly as a search crawler does, extracting schema, headings, meta tags and local signals." },
-  { name: "Read your three scores", text: "You get SEO, AEO and GEO scored out of 100 each, with every passing and failing check listed." },
-  { name: "Apply the ranked fixes", text: "The five highest-impact fixes are ranked by points recoverable, each with specific instructions you can hand to a developer." },
+  { name: "Get your free audit", text: "Paste your website or Google Maps link. You see exactly what's missing on Google, Maps and AI search — free, no signup." },
+  { name: "We decide what to fix first", text: "Instead of a 50-page report, you get the few changes that matter most this week, ranked by impact." },
+  { name: "We do the work", text: "We update your Google profile, reply to reviews and fix your website. Anything risky waits for your OK on WhatsApp." },
+  { name: "You see the results", text: "Each month, a short report from your real Google numbers — calls, directions, website clicks — before and after each change." },
 ];
 
 export const NAV = [
+  { href: "/managed", label: "How it works" },
   { href: "/audit", label: "Free audit" },
   { href: "/tools", label: "Tools" },
-  { href: "/autopilot", label: "GBP Autopilot" },
   { href: "/blog", label: "Blog" },
   { href: "/pricing", label: "Pricing" },
 ];
 
 export const FOOTER_NAV = {
-  Product: [
-    { href: "/audit", label: "Visibility audit" },
+  Service: [
+    { href: "/managed", label: "Growlocal Managed" },
+    { href: "/audit", label: "Free visibility audit" },
     { href: "/tools", label: "Free tools" },
-    { href: "/autopilot", label: "GBP Autopilot" },
     { href: "/pricing", label: "Pricing" },
   ],
   Learn: [

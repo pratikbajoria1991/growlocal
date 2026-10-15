@@ -31,7 +31,7 @@ export default function CompareTool() {
 
   return (
     <div className="max-w-4xl mx-auto px-5 sm:px-8 pt-12 pb-20">
-      <Link href="/tools" className="inline-flex items-center gap-1.5 text-sm text-forest-900/50 hover:text-forest-900 mb-8 transition-colors">
+      <Link href="/tools" className="inline-flex items-center gap-1.5 text-sm text-forest-900/70 hover:text-forest-900 mb-8 transition-colors">
         <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" /> All tools
       </Link>
 
@@ -49,19 +49,19 @@ export default function CompareTool() {
 
       <form onSubmit={submit} className="mb-8 space-y-3">
         <div>
-          <label htmlFor="cmp-a" className="block text-xs text-forest-900/55 mb-1.5">Your website</label>
+          <label htmlFor="cmp-a" className="block text-xs text-forest-900/70 mb-1.5">Your website</label>
           <input
             id="cmp-a" type="text" inputMode="url" value={a} onChange={(e) => setA(e.target.value)}
             placeholder="yourbusiness.com" disabled={loading} suppressHydrationWarning
-            className="w-full px-4 py-3 rounded-xl border hairline bg-white outline-none focus:border-lime-500/60 transition-colors"
+            className="w-full px-4 py-3 rounded-xl border hairline bg-white outline-none focus:border-indigo-500/60 transition-colors"
           />
         </div>
         <div>
-          <label htmlFor="cmp-b" className="block text-xs text-forest-900/55 mb-1.5">Their website</label>
+          <label htmlFor="cmp-b" className="block text-xs text-forest-900/70 mb-1.5">Their website</label>
           <input
             id="cmp-b" type="text" inputMode="url" value={b} onChange={(e) => setB(e.target.value)}
             placeholder="competitor.com" disabled={loading} suppressHydrationWarning
-            className="w-full px-4 py-3 rounded-xl border hairline bg-white outline-none focus:border-lime-500/60 transition-colors"
+            className="w-full px-4 py-3 rounded-xl border hairline bg-white outline-none focus:border-indigo-500/60 transition-colors"
           />
         </div>
         <button
@@ -86,7 +86,7 @@ export default function CompareTool() {
               <SideCard label="Them" data={res.them} winner={res.overallDelta < 0} />
             </div>
 
-            <div className={`rounded-2xl p-4 mb-8 text-sm leading-relaxed ${res.overallDelta >= 0 ? "bg-lime-500/[0.08] border border-lime-500/25" : "bg-rose-500/[0.05] border border-rose-500/25"}`}>
+            <div className={`rounded-2xl p-4 mb-8 text-sm leading-relaxed ${res.overallDelta >= 0 ? "bg-emerald-500/[0.08] border border-emerald-500/25" : "bg-rose-500/[0.05] border border-rose-500/25"}`}>
               {res.overallDelta > 0 && <>You&apos;re ahead by <strong>{res.overallDelta} points</strong> overall.</>}
               {res.overallDelta === 0 && <>You&apos;re dead level on overall score.</>}
               {res.overallDelta < 0 && <>They&apos;re ahead by <strong>{Math.abs(res.overallDelta)} points</strong> overall. The gaps below are how you close it.</>}
@@ -103,25 +103,25 @@ export default function CompareTool() {
                   <li key={d.category} className="rounded-2xl border hairline bg-white p-4">
                     <div className="flex items-center gap-3 mb-2.5">
                       <span className="text-[11px] uppercase tracking-[0.12em] font-semibold" style={{ color: m.color }}>{d.category}</span>
-                      <span className="text-xs text-forest-900/45">{m.short}</span>
+                      <span className="text-xs text-forest-900/65">{m.short}</span>
                       <span className="ml-auto inline-flex items-center gap-1 text-sm font-semibold" style={{ color: tone }}>
                         <Icon className="w-3.5 h-3.5" aria-hidden="true" />
                         {d.delta > 0 ? "+" : ""}{d.delta}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-xs">
-                      <span className="w-10 text-forest-900/50 shrink-0">You</span>
+                      <span className="w-10 text-forest-900/70 shrink-0">You</span>
                       <span className="flex-1 h-2 rounded-full bg-forest-900/[0.07] overflow-hidden">
                         <motion.span className="block h-full rounded-full" style={{ background: m.color }} initial={{ width: 0 }} animate={{ width: `${d.you}%` }} transition={{ duration: 0.8 }} />
                       </span>
                       <span className="w-8 text-right tabular-nums font-medium">{d.you}</span>
                     </div>
                     <div className="flex items-center gap-2 text-xs mt-1.5">
-                      <span className="w-10 text-forest-900/50 shrink-0">Them</span>
+                      <span className="w-10 text-forest-900/70 shrink-0">Them</span>
                       <span className="flex-1 h-2 rounded-full bg-forest-900/[0.07] overflow-hidden">
                         <motion.span className="block h-full rounded-full bg-forest-900/25" initial={{ width: 0 }} animate={{ width: `${d.them}%` }} transition={{ duration: 0.8, delay: 0.1 }} />
                       </span>
-                      <span className="w-8 text-right tabular-nums text-forest-900/55">{d.them}</span>
+                      <span className="w-8 text-right tabular-nums text-forest-900/70">{d.them}</span>
                     </div>
                   </li>
                 );
@@ -132,7 +132,7 @@ export default function CompareTool() {
             {res.gaps.length > 0 ? (
               <>
                 <h2 className="font-display text-lg mb-1">What they do that you don&apos;t</h2>
-                <p className="text-sm text-forest-900/55 mb-4">
+                <p className="text-sm text-forest-900/70 mb-4">
                   {res.gaps.length} {res.gaps.length === 1 ? "check" : "checks"} they pass and you don&apos;t, highest value first.
                 </p>
                 <ol className="space-y-2 mb-8">
@@ -143,11 +143,11 @@ export default function CompareTool() {
                           {g.category}
                         </span>
                         <span className="text-sm font-medium">{g.label}</span>
-                        <span className="text-[11px] font-semibold text-lime-700 bg-lime-500/12 px-1.5 py-0.5 rounded">+{g.recoverable} pts</span>
+                        <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-500/12 px-1.5 py-0.5 rounded">+{g.recoverable} pts</span>
                       </div>
                       {g.fix && (
                         <p className="text-sm text-forest-900/65 leading-relaxed flex items-start gap-2 mt-2">
-                          <Wrench className="w-3.5 h-3.5 text-lime-600 shrink-0 mt-0.5" aria-hidden="true" />
+                          <Wrench className="w-3.5 h-3.5 text-indigo-600 shrink-0 mt-0.5" aria-hidden="true" />
                           {g.fix}
                         </p>
                       )}
@@ -180,15 +180,15 @@ export default function CompareTool() {
 function SideCard({ label, data, winner }) {
   return (
     <div className={`rounded-4xl p-6 ${winner ? "bg-forest-900 text-canvas-50" : "border hairline bg-white"}`}>
-      <div className={`text-[11px] uppercase tracking-[0.15em] mb-1 ${winner ? "text-lime-400" : "text-forest-900/35"}`}>
+      <div className={`text-[11px] uppercase tracking-[0.15em] mb-1 ${winner ? "text-indigo-400" : "text-forest-900/65"}`}>
         {label}{winner && " · ahead"}
       </div>
       <div className="flex items-baseline gap-2 mb-2">
         <span className="font-display text-5xl leading-none">{data.overall}</span>
-        <span className={winner ? "text-canvas-50/40" : "text-forest-900/35"}>/100</span>
+        <span className={winner ? "text-canvas-50/75" : "text-forest-900/65"}>/100</span>
         <span className={`ml-1 text-xs px-2 py-0.5 rounded ${winner ? "bg-canvas-50/15" : "bg-forest-900/[0.06]"}`}>{data.grade}</span>
       </div>
-      <p className={`text-xs font-mono break-all leading-relaxed ${winner ? "text-canvas-50/45" : "text-forest-900/45"}`}>{data.url}</p>
+      <p className={`text-xs font-mono break-all leading-relaxed ${winner ? "text-canvas-50/75" : "text-forest-900/65"}`}>{data.url}</p>
     </div>
   );
 }
