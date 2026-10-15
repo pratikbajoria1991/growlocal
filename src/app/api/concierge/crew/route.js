@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
 import { isAdmin } from "@/lib/clients";
 import { hasApiToken } from "@/lib/api-token";
-import { startCrew, advanceCrew, runCrew, getCrewRun, listCrewRuns, getCrewPatch } from "@/lib/crew/crew";
+import { startCrew, runCrew, getCrewRun, listCrewRuns, getCrewPatch, crewStats } from "@/lib/crew/crew";
 import { llmConfigured, provider, MODEL } from "@/lib/crew/llm";
 import { mockLlm } from "@/lib/crew/mock";
 import { chainNext } from "@/lib/crew/chain";
@@ -26,6 +26,7 @@ async function gate(req) {
 export async function GET(req) {
   const denied = await gate(req); if (denied) return denied;
   const q = new URL(req.url).searchParams, id = q.get("id");
+  if (q.get("stats")) return NextResponse.json(await crewStats());
   if (q.get("report")) {
     const clientId = String(q.get("report")).slice(0, 80);
     return NextResponse.json({ ...(await monthlyReport(clientId)), history: await clientRuns(clientId) });

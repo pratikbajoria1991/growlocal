@@ -71,6 +71,9 @@ export async function upsertClient(patch) {
     // the owner (hours, doctors, services) that let drafts ship complete.
     crewGoal: (patch.crewGoal ?? existing.crewGoal ?? "").trim().slice(0, 500),
     ownerFacts: (patch.ownerFacts ?? existing.ownerFacts ?? "").trim().slice(0, 4000),
+    // Answers the owner gave to the crew's questions, so answered questions
+    // aren't asked again. The text also goes into ownerFacts for the crew.
+    ownerAnswers: Array.isArray(patch.ownerAnswers) ? patch.ownerAnswers.slice(-60) : existing.ownerAnswers || [],
     status: patch.status ?? existing.status ?? "trial",
     createdAt: existing.createdAt || now,
     updatedAt: now,

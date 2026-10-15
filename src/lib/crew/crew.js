@@ -414,3 +414,29 @@ export async function runCrew(params) {
 export const getCrewRun = async (id) => { const j = await get(jobKey(id)); return j ? publicRun(j) : null; };
 export const listCrewRuns = async () => (await get("crew:runs")) || [];
 export const getCrewPatch = (id) => get(`crew:patch:${id}`);
+
+/**
+ * Quality and cost across recent finished runs: per agent, how much of its
+ * work passed review, and per run, tokens, time and measured audit change.
+ */
+export async function crewStats(limit = 25) {
+  const index = (await listCrewRuns()).filter((r) => r.status === "done").slice(0, limit);
+  const runs = (await Promise.all(index.map((r) => get(jobKey(r.id))))).filter(Boolean);
+  const agents = {};
+  for (const j of runs) for (const it of j.items || []) {
+    const a = (agents[it.agent] ||= { agent: it.agent, drafted: 0, approved: 0, needsInput: 0, revise: 0, rejected: 0, held: 0, superseded: 0 });
+    a.drafted++;
+    const k = { approved: "approved", needs_input: "needsInput", revise: "revise", rejected: "rejected", held: "held", superseded: "superseded" }[it.status];
+    if (k) a[k]++;
+  }
+  const avg = (xs) => (xs.length ? Math.round(xs.reduce((s, x) => s + x, 0) / xs.length) : null);
+  const deltas = runs.map((j) => j.verification?.delta).filter((x) => typeof x === "number");
+  return {
+    runs: runs.length,
+    avgTokens: avg(runs.map((j) => j.budget?.used || 0)),
+    avgSeconds: avg(runs.map((j) => Math.round((j.durationMs || 0) / 1000)).filter(Boolean)),
+    avgAuditDelta: deltas.length ? Math.round((deltas.reduce((s, x) => s + x, 0) / deltas.length) * 10) / 10 : null,
+    providers: runs.reduce((m, j) => ((m[`${j.provider || "?"} · ${j.model || "?"}`] = (m[`${j.provider || "?"} · ${j.model || "?"}`] || 0) + 1), m), {}),
+    agents: Object.values(agents).map((a) => ({ ...a, approvalRate: a.drafted ? Math.round((a.approved / a.drafted) * 100) : null })),
+  };
+}

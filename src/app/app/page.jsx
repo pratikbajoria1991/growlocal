@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, LogOut, CheckCircle2, Clock, MessageCircle, ExternalLink } from "lucide-react";
+import { ArrowRight, LogOut, CheckCircle2, Clock, MessageCircle, ExternalLink, TrendingUp, HelpCircle } from "lucide-react";
 import { getCurrentUser } from "@/lib/session";
 import { clientsForOwner, isAdmin } from "@/lib/clients";
 import { listActions, ACTION_TYPES, latestDelta } from "@/lib/ledger";
 import { OwnerDecision } from "@/components/OwnerDecision";
+import { OwnerAnswers } from "@/components/OwnerAnswers";
+import { monthlyReport, clientRuns, tidyQuestions } from "@/lib/crew/monthly";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your business", robots: { index: false, follow: false } };
@@ -17,7 +19,10 @@ export default async function OwnerDashboard() {
 
   const businesses = await clientsForOwner(user.email);
   const withActions = await Promise.all(
-    businesses.map(async (b) => ({ business: b, actions: await listActions(b.id) })),
+    businesses.map(async (b) => {
+      const [actions, report, runs] = await Promise.all([listActions(b.id), monthlyReport(b.id), clientRuns(b.id)]);
+      return { business: b, actions, report, runs };
+    }),
   );
 
   return (
@@ -45,15 +50,15 @@ export default async function OwnerDashboard() {
       {businesses.length === 0 ? (
         <NotAClientYet />
       ) : (
-        withActions.map(({ business, actions }) => (
-          <BusinessView key={business.id} business={business} actions={actions} showName={businesses.length > 1} />
+        withActions.map(({ business, actions, report, runs }) => (
+          <BusinessView key={business.id} business={business} actions={actions} report={report} runs={runs} showName={businesses.length > 1} />
         ))
       )}
     </div>
   );
 }
 
-function BusinessView({ business, actions, showName }) {
+function BusinessView({ business, actions, report, runs, showName }) {
   const awaiting = actions.filter((a) => a.status === "awaiting_approval");
   const upcoming = actions.filter((a) => a.status === "planned" || a.status === "approved")
     .sort((x, y) => x.plannedFor.localeCompare(y.plannedFor));
@@ -86,6 +91,8 @@ function BusinessView({ business, actions, showName }) {
           </ul>
         )}
       </Block>
+
+      <GrowthPlan business={business} report={report} runs={runs} />
 
       {/* Results */}
       {measured.length > 0 && (
@@ -157,6 +164,60 @@ function BusinessView({ business, actions, showName }) {
         )}
       </Block>
     </section>
+  );
+}
+
+const CYCLE_DAYS = 28;
+const day = (iso) => new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "long" });
+
+// The monthly Growth Crew, from the owner's side: the goal, when we last
+// worked on it and when next, what changed in measured numbers, and the
+// details only the owner can give us.
+function GrowthPlan({ business, report, runs }) {
+  if (!business.crewGoal && !runs?.length) return null;
+  const last = runs?.[0];
+  const next = last ? new Date(Date.parse(last.startedAt) + CYCLE_DAYS * 86_400_000).toISOString() : null;
+  const cur = report?.current, ch = report?.change;
+  const questions = tidyQuestions(cur?.ownerQuestions || [], business.ownerAnswers || []);
+  const fmt = (n) => (n == null ? null : `${n > 0 ? "+" : ""}${n}`);
+  return (
+    <>
+      <Block icon={TrendingUp} title="Your monthly growth plan">
+        {business.crewGoal && <p className="text-sm mb-4"><span className="text-forest-900/70">Goal: </span>{business.crewGoal}</p>}
+        <div className="grid sm:grid-cols-3 gap-3 mb-4">
+          <Fact k="Last update" v={last ? day(last.startedAt) : "Starting soon"} />
+          <Fact k="Next update" v={next ? day(next) : "—"} />
+          <Fact k="Changes ready this month" v={cur ? `${cur.approved}` : "—"} />
+        </div>
+        {cur && (
+          <div className="grid sm:grid-cols-3 gap-3">
+            <Fact k="Google rating" v={cur.rating != null ? `${cur.rating}★${ch?.rating ? ` (${fmt(ch.rating)})` : ""}` : "—"} />
+            <Fact k="Google reviews" v={cur.reviews != null ? `${cur.reviews}${ch?.reviews ? ` (${fmt(ch.reviews)})` : ""}` : "—"} />
+            <Fact k="Website score" v={cur.audit ? `${cur.audit.overall}/100${ch?.auditOverall ? ` (${fmt(ch.auditOverall)})` : ""}${cur.auditIfApplied && cur.auditIfApplied.overall > cur.audit.overall ? ` → ${cur.auditIfApplied.overall} once this month's changes go live` : ""}` : "No website yet"} />
+          </div>
+        )}
+        <p className="text-xs text-forest-900/65 mt-3">
+          Numbers come from your live Google listing and our website audit at each monthly check. Changes that need your OK are listed above.
+        </p>
+      </Block>
+      {questions.length > 0 && (
+        <Block icon={HelpCircle} title="We need a few details from you" tone="ask">
+          <p className="text-sm text-forest-900/70 mb-4">
+            We only publish what we can verify. Answer these and next month&apos;s changes can include them.
+          </p>
+          <OwnerAnswers clientId={business.id} questions={questions} />
+        </Block>
+      )}
+    </>
+  );
+}
+
+function Fact({ k, v }) {
+  return (
+    <div className="rounded-2xl border hairline bg-white p-3.5">
+      <div className="text-xs text-forest-900/65 mb-0.5">{k}</div>
+      <div className="text-sm font-medium">{v}</div>
+    </div>
   );
 }
 

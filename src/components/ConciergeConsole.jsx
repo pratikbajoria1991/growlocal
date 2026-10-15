@@ -28,7 +28,10 @@ const FIELDS = [
   ["ownerEmail", "Owner's sign-in email", "owner@business.com — links their dashboard"],
   ["services", "Services", "Implants, root canal, braces"],
   ["notes", "Notes", "Closed Sundays. Dr. Sharma is the draw."],
+  ["crewGoal", "Monthly Growth Crew goal", "More implant enquiries from Google Maps and AI search"],
+  ["ownerFacts", "Verified owner facts for the crew", "Hours, doctors and qualifications, services, prices the owner confirmed"],
 ];
+const WIDE = new Set(["services", "notes", "crewGoal", "ownerFacts"]);
 
 export function ConciergeConsole() {
   const [clients, setClients] = useState([]);
@@ -148,7 +151,7 @@ export function ConciergeConsole() {
             </div>
             <div className="grid sm:grid-cols-2 gap-3">
               {FIELDS.map(([key, label, ph]) => (
-                <label key={key} className={key === "services" || key === "notes" ? "sm:col-span-2" : ""}>
+                <label key={key} className={WIDE.has(key) ? "sm:col-span-2" : ""}>
                   <span className="block text-xs text-forest-900/70 mb-1.5">{label}</span>
                   <input
                     value={form[key] || ""}
@@ -159,6 +162,18 @@ export function ConciergeConsole() {
                   />
                 </label>
               ))}
+              <label>
+                <span className="block text-xs text-forest-900/70 mb-1.5">Status</span>
+                <select
+                  value={form.status || "trial"}
+                  onChange={(e) => setForm({ ...form, status: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border hairline bg-canvas-50 outline-none focus:border-indigo-500/60 text-sm"
+                >
+                  <option value="trial">Trial</option>
+                  <option value="active">Active (monthly crew runs)</option>
+                  <option value="paused">Paused</option>
+                </select>
+              </label>
             </div>
             <button
               disabled={busy === "save"}

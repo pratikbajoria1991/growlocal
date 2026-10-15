@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Radar, FileText } from "lucide-react";
+import { Radar, FileText, Bot } from "lucide-react";
 import { getCurrentUser } from "@/lib/session";
 import { isAdmin } from "@/lib/clients";
 import { ConciergeConsole } from "@/components/ConciergeConsole";
@@ -40,7 +40,13 @@ export default async function ConciergePage() {
             record their Google numbers at day 7, 28 and 56. Every week, ask: which of these could the software do without me?
           </p>
         </div>
-        <div className="flex gap-2 shrink-0">
+        <div className="flex flex-wrap gap-2 shrink-0">
+          <Link
+            href="/concierge/crew"
+            className="px-4 py-2.5 rounded-xl border hairline bg-white hover:bg-forest-900/[0.03] text-sm font-medium inline-flex items-center gap-2 transition-colors"
+          >
+            <Bot className="w-4 h-4 text-indigo-600" /> Growth Crew
+          </Link>
           <Link
             href="/concierge/proposals"
             className="px-4 py-2.5 rounded-xl btn-premium text-white text-sm font-medium inline-flex items-center gap-2"
