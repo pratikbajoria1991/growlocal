@@ -1,12 +1,13 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, LogOut, CheckCircle2, Clock, MessageCircle, ExternalLink, TrendingUp, HelpCircle } from "lucide-react";
+import { ArrowRight, ClipboardList, LogOut, CheckCircle2, Clock, MessageCircle, ExternalLink, TrendingUp, HelpCircle } from "lucide-react";
 import { getCurrentUser } from "@/lib/session";
 import { clientsForOwner, isAdmin } from "@/lib/clients";
 import { listActions, ACTION_TYPES, latestDelta } from "@/lib/ledger";
 import { OwnerDecision } from "@/components/OwnerDecision";
 import { OwnerAnswers } from "@/components/OwnerAnswers";
 import { monthlyReport, clientRuns, tidyQuestions } from "@/lib/crew/monthly";
+import { onboardingProgress } from "@/lib/onboarding";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your business", robots: { index: false, follow: false } };
@@ -69,6 +70,8 @@ function BusinessView({ business, actions, report, runs, showName }) {
   return (
     <section className="mb-14">
       {showName && <h2 className="font-display text-2xl mb-6">{business.name}</h2>}
+
+      <SetupCard business={business} />
 
       {/* Needs you — the only action an owner ever has to take */}
       <Block
@@ -209,6 +212,34 @@ function GrowthPlan({ business, report, runs }) {
         </Block>
       )}
     </>
+  );
+}
+
+// Onboarding: prominent until complete, then a quiet link to edit.
+function SetupCard({ business }) {
+  const p = onboardingProgress(business.onboarding, business.consent);
+  const href = `/app/onboarding/${business.id}`;
+  if (p.pct === 100) {
+    return (
+      <p className="mb-8 text-sm text-forest-900/70">
+        Setup complete. <Link href={href} className="text-indigo-700 underline underline-offset-4">Edit your business details</Link>
+      </p>
+    );
+  }
+  return (
+    <div className="mb-8 rounded-3xl bg-forest-900 text-canvas-50 p-6 sm:p-7">
+      <div className="flex items-start gap-4">
+        <span className="w-11 h-11 rounded-2xl bg-brand flex items-center justify-center shrink-0"><ClipboardList className="w-5 h-5 text-brand-ink" aria-hidden="true" /></span>
+        <div className="min-w-0 flex-1">
+          <h2 className="font-display font-bold text-xl tracking-[-0.03em] mb-1">{p.pct === 0 ? "Set up your business" : `Finish setting up (${p.pct}%)`}</h2>
+          <p className="text-sm text-canvas-50/75 mb-4">About 10 minutes. Our agents can only use facts you confirm, so this is what lets them do complete work for you.</p>
+          <div className="h-1.5 rounded-full bg-canvas-50/15 overflow-hidden mb-5 max-w-sm"><div className="h-full bg-brand" style={{ width: `${p.pct}%` }} /></div>
+          <Link href={href} className="inline-flex items-center gap-2 px-5 py-2.5 btn-premium text-sm">
+            {p.pct === 0 ? "Start setup" : "Continue setup"} <ArrowRight className="w-4 h-4" aria-hidden="true" />
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }
 

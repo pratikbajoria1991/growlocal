@@ -9,6 +9,7 @@
 import { listClients, getClient } from "../clients";
 import { get, set } from "../store";
 import { startCrew, getCrewRun } from "./crew";
+import { onboardingFacts } from "../onboarding";
 
 const CYCLE_DAYS = () => Number(process.env.CREW_CYCLE_DAYS) || 28;
 const MAX_PER_DAY = () => Number(process.env.CREW_MAX_RUNS_PER_DAY) || 10;
@@ -29,8 +30,10 @@ export async function dueClients(now = Date.now()) {
   return out;
 }
 
+// Onboarding first so the length cap trims older free-text notes, not the form.
 const ownerFactsOf = (c) =>
-  [c.ownerFacts, c.services && `Services: ${c.services}`, c.phone && `Phone: ${c.phone}`].filter(Boolean).join("\n").slice(0, 4000);
+  [onboardingFacts(c.onboarding), c.ownerFacts, c.services && `Services: ${c.services}`, c.phone && `Phone: ${c.phone}`]
+    .filter(Boolean).join("\n").slice(0, 6000);
 
 /** Starts this cycle's run for one client and records it in their history. */
 export async function startClientRun(clientOrId) {

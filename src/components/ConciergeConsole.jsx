@@ -6,6 +6,7 @@ import {
   CalendarDays, PenLine, ListChecks,
 } from "lucide-react";
 import { WorkLogPanel } from "./WorkLogPanel";
+import { onboardingProgress } from "@/lib/onboarding";
 
 const ACTIONS = [
   { id: "audit", label: "Website audit", icon: Search, needs: "website" },
@@ -126,6 +127,7 @@ export function ConciergeConsole() {
               >
                 <div className="text-sm font-medium truncate">{c.name}</div>
                 <div className="text-xs text-forest-900/65 truncate">{c.vertical || "—"}{c.city ? ` · ${c.city}` : ""}</div>
+                <div className="text-[11px] text-forest-900/65 mt-0.5">Owner setup {onboardingProgress(c.onboarding, c.consent).pct}%</div>
               </button>
             </li>
           ))}

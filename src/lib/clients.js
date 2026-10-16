@@ -74,6 +74,10 @@ export async function upsertClient(patch) {
     // Answers the owner gave to the crew's questions, so answered questions
     // aren't asked again. The text also goes into ownerFacts for the crew.
     ownerAnswers: Array.isArray(patch.ownerAnswers) ? patch.ownerAnswers.slice(-60) : existing.ownerAnswers || [],
+    // Owner onboarding form (src/lib/onboarding.js) and the owner's consent
+    // to let Growlocal act on their behalf, with who gave it and when.
+    onboarding: patch.onboarding ?? existing.onboarding ?? null,
+    consent: patch.consent ?? existing.consent ?? null,
     status: patch.status ?? existing.status ?? "trial",
     createdAt: existing.createdAt || now,
     updatedAt: now,
