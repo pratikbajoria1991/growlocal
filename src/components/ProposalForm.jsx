@@ -53,7 +53,7 @@ export function ProposalForm({ compact = false, onCreated }) {
         <span className="sr-only">Google Maps link or business name and area</span>
         <input
           required value={input} onChange={(e) => setInput(e.target.value)} disabled={busy}
-          placeholder="Google Maps link, or “Sharma Dental Care, Salt Lake Kolkata”"
+          placeholder="Google Maps link, or business name and area"
           className={inputCls} suppressHydrationWarning
         />
       </label>

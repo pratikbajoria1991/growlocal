@@ -107,7 +107,7 @@ function normalize(place) {
     theme: theme.id,
     address: place.formattedAddress || null,
     area: addressPart(place, "sublocality_level_1", "neighborhood", "sublocality"),
-    city: addressPart(place, "locality") || "Kolkata",
+    city: addressPart(place, "locality") || "",
     postalCode: addressPart(place, "postal_code"),
     lat: place.location?.latitude ?? null,
     lng: place.location?.longitude ?? null,

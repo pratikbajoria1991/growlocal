@@ -68,7 +68,7 @@ export default function Home() {
         <div className="relative max-w-7xl mx-auto px-5 sm:px-8 pt-14 sm:pt-24 text-center">
           <a href="#data" className="eyebrow normal-case tracking-normal text-[13px] font-medium hover:border-indigo-500/60 transition-colors mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-brand shrink-0" aria-hidden="true" />
-            We audited {MARKET.businesses.toLocaleString("en-IN")} Kolkata businesses. See what we found <ArrowRight className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            We audited {MARKET.businesses.toLocaleString("en-IN")} local businesses. See what we found <ArrowRight className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
           </a>
 
           <h1 className="font-display font-bold text-[2.6rem] leading-[1.02] sm:text-6xl lg:text-[5rem] tracking-[-0.05em] mb-7 max-w-5xl mx-auto text-balance">
@@ -82,7 +82,7 @@ export default function Home() {
           <HeroForm />
 
           <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-forest-900/75">
-            {["No agency retainer", "No dashboard to learn", "Built in Kolkata"].map((t) => (
+            {["No agency retainer", "No dashboard to learn", "Month to month"].map((t) => (
               <li key={t} className="inline-flex items-center gap-1.5">
                 <span className="w-4 h-4 rounded-full bg-brand/25 flex items-center justify-center"><Check className="w-3 h-3 text-indigo-700" aria-hidden="true" /></span> {t}
               </li>
@@ -105,7 +105,7 @@ export default function Home() {
       <section id="data" className="mt-20 sm:mt-28 bg-forest-900 text-canvas-50 relative overflow-hidden">
         <div className="relative max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
           <Reveal className="text-center max-w-4xl mx-auto">
-            <p className="eyebrow eyebrow-dark mb-6"><Sparkles className="w-3.5 h-3.5 text-brand" aria-hidden="true" />The state of local visibility in {MARKET.city}</p>
+            <p className="eyebrow eyebrow-dark mb-6"><Sparkles className="w-3.5 h-3.5 text-brand" aria-hidden="true" />The state of local visibility</p>
             <h2 className="font-display font-bold text-3xl sm:text-5xl lg:text-6xl leading-[1.04] tracking-[-0.045em] text-balance">
               We audited {MARKET.businesses.toLocaleString("en-IN")} local businesses. <span className="text-brand">Most websites are unreadable to the AI assistants customers now ask.</span>
             </h2>
@@ -120,8 +120,7 @@ export default function Home() {
             ))}
           </div>
           <p className="mt-8 text-xs text-canvas-50/60 max-w-3xl mx-auto text-center leading-relaxed">
-            Method: live Google Maps data and our own SEO/AEO/GEO website audit, run {MARKET.asOf} on {MARKET.businesses.toLocaleString("en-IN")} unique Kolkata
-            businesses — clinics, skin, dental and eye care, fertility, jewellers, furniture, bathroom and tiles, home automation, interiors, real estate,
+            Method: live Google Maps data and our own SEO/AEO/GEO website audit, run {MARKET.asOf} on {MARKET.businesses.toLocaleString("en-IN")} unique local businesses in one large metro — clinics, skin, dental and eye care, fertility, jewellers, furniture, bathroom and tiles, home automation, interiors, real estate,
             salons and professional services. This is the set we chose to
             audit, not a random sample of every business in the city. Search position is one Google search per business; it varies by where the customer stands.
           </p>
@@ -133,7 +132,7 @@ export default function Home() {
         <Reveal className="max-w-3xl mx-auto text-center mb-12">
           <p className="eyebrow mb-6"><BadgeCheck className="w-3.5 h-3.5 text-indigo-600" aria-hidden="true" />Verified study · {HIGH_TICKET.asOf}</p>
           <h2 className={`${H2} mb-5`}>
-            {HIGH_TICKET.listings.toLocaleString("en-IN")} high-ticket Kolkata businesses. <span className="text-indigo-600">Every number checked against live Google.</span>
+            {HIGH_TICKET.listings.toLocaleString("en-IN")} high-ticket local businesses. <span className="text-indigo-600">Every number checked against live Google.</span>
           </h2>
           <p className="text-lg text-forest-900/70 leading-relaxed text-pretty">
             Skin and aesthetic clinics, jewellers, furniture, bathroom and tiles, home automation, specialist clinics, architects, wedding venues and more:
@@ -206,7 +205,7 @@ export default function Home() {
           </div>
         </div>
         <p className="mt-6 text-xs text-forest-900/60 max-w-3xl mx-auto text-center leading-relaxed">
-          Method: Google Maps listings collected for high-ticket categories across Kolkata, each re-fetched from the live Google Places API on {HIGH_TICKET.asOf},
+          Method: Google Maps listings collected for high-ticket categories across one large metro, each re-fetched from the live Google Places API on {HIGH_TICKET.asOf},
           ranked with one live search for its own category and area, and its website scored with our SEO/AEO/GEO audit. Percentages are of all {HIGH_TICKET.listings} listings
           unless stated. These {HIGH_TICKET.listings} are included in the {MARKET.businesses.toLocaleString("en-IN")} above. This is the set we chose to study, not a random sample. No business is named.
         </p>

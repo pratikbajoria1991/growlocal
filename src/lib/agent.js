@@ -129,7 +129,7 @@ For each piece output:
     label: "Write a blog post",
     hint: "Full post + Article & FAQ schema",
     inputLabel: "Which topic? Paste a title or question from the calendar",
-    inputPlaceholder: "How much does a dental implant cost in Kolkata?",
+    inputPlaceholder: "How much does a dental implant cost near me?",
     system:
       "You write local business content engineered for answer engines. You open with a direct answer in the first two sentences, use question-shaped subheadings, and keep paragraphs between 40 and 320 characters so they can be quoted whole. You never invent prices, credentials, or claims — where a real detail is needed you write <FILL: what's needed>.",
     prompt: (s, input) => `Write a complete, publish-ready blog post for this business.

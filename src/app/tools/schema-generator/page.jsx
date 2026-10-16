@@ -96,7 +96,7 @@ export default function SchemaGenerator() {
 
               <div className="grid sm:grid-cols-2 gap-3">
                 <Field label="Email"><Input value={f.email} onChange={(v) => set("email", v)} placeholder="hello@example.com" /></Field>
-                <Field label="Price range"><Input value={f.priceRange} onChange={(v) => set("priceRange", v)} placeholder="₹₹" /></Field>
+                <Field label="Price range"><Input value={f.priceRange} onChange={(v) => set("priceRange", v)} placeholder="$$" /></Field>
               </div>
 
               <Divider>Address</Divider>
@@ -104,8 +104,8 @@ export default function SchemaGenerator() {
                 <Input value={f.street} onChange={(v) => set("street", v)} placeholder="12 Park Street" />
               </Field>
               <div className="grid sm:grid-cols-2 gap-3">
-                <Field label="City"><Input value={f.locality} onChange={(v) => set("locality", v)} placeholder="Kolkata" /></Field>
-                <Field label="State / region"><Input value={f.region} onChange={(v) => set("region", v)} placeholder="West Bengal" /></Field>
+                <Field label="City"><Input value={f.locality} onChange={(v) => set("locality", v)} placeholder="City" /></Field>
+                <Field label="State / region"><Input value={f.region} onChange={(v) => set("region", v)} placeholder="State or region" /></Field>
               </div>
               <div className="grid sm:grid-cols-2 gap-3">
                 <Field label="Postal code"><Input value={f.postalCode} onChange={(v) => set("postalCode", v)} placeholder="700016" /></Field>
@@ -120,7 +120,7 @@ export default function SchemaGenerator() {
               <p className="text-xs text-forest-900/65 -mt-1">Right-click your exact spot in Google Maps to copy coordinates.</p>
 
               <Field label="Areas served" hint="Comma-separated. Every locality you serve, not just where you sit.">
-                <Input value={f.areaServed} onChange={(v) => set("areaServed", v)} placeholder="Ballygunge, Gariahat, Park Street" />
+                <Input value={f.areaServed} onChange={(v) => set("areaServed", v)} placeholder="Neighbourhoods you serve, comma-separated" />
               </Field>
 
               <Divider>Opening hours</Divider>
@@ -164,7 +164,7 @@ export default function SchemaGenerator() {
                   <textarea
                     rows={2} value={pair.a}
                     onChange={(e) => setFaqs(faqs.map((p, j) => j === i ? { ...p, a: e.target.value } : p))}
-                    placeholder="A first consultation costs ₹500 and takes about 30 minutes."
+                    placeholder="A first consultation takes about 30 minutes."
                     suppressHydrationWarning
                     className="w-full mt-2 px-3.5 py-2.5 rounded-xl border hairline bg-canvas-50 outline-none focus:border-indigo-500/60 text-sm leading-relaxed resize-y transition-colors"
                   />

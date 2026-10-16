@@ -59,7 +59,7 @@ export async function mapsRank({ business, keyword, area }) {
   if (spot instanceof PlacesError) throw spot;
   const center = spot[0]?.location;
   if (!center) {
-    const e = new Error("We couldn't find that area on Google Maps. Try adding the city, like Salt Lake, Kolkata.");
+    const e = new Error("We couldn't find that area on Google Maps. Try adding the neighbourhood and the city.");
     e.userFacing = true;
     throw e;
   }

@@ -30,7 +30,7 @@ export async function GET(req) {
 
   checks.placesProvider = placesProvider();
   try {
-    const [r] = await placesBatch([{ kind: "text", query: "dentist Kolkata", max: 1, fields: ["id"] }]);
+    const [r] = await placesBatch([{ kind: "text", query: "dentist", max: 1, fields: ["id"] }]);
     checks.placesLookup = r instanceof Error ? `failed: ${r.code}` : Array.isArray(r) && r.length ? "ok" : "no results";
   } catch (e) { checks.placesLookup = `failed: ${e.code || "error"}`; }
 

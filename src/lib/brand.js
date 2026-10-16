@@ -26,7 +26,7 @@ export const BRAND = {
 export const ORG = {
   founder: "Pratik Bajoria",
   // No public phone or street address is published until real ones are added.
-  areaServed: ["India", "Kolkata", "Mumbai", "Delhi", "Bengaluru", "Hyderabad", "Chennai", "Pune"],
+  areaServed: ["India"],
   sameAs: [
     "https://github.com/pratikbajoria1991/growlocal",
     "https://www.linkedin.com/in/pratikbajoria",

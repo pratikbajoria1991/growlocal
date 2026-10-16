@@ -17,7 +17,7 @@ const FAQ = [
   { q: "Where do these keywords come from?", a: "From Google's own search suggestions, the list that appears as people type. Every idea is something people actually search." },
   { q: "Does it show search volume?", a: "No. Google's suggestions don't include volumes, so we group ideas by intent instead. Paid tools like Semrush and Ahrefs estimate volumes from their own data." },
   { q: "What are question keywords for?", a: "Questions are what people ask Google and AI assistants. Answering them clearly in an FAQ helps you show up in both." },
-  { q: "Why add my area?", a: "Local businesses win on local searches. Adding your area surfaces searches like best dentist in Salt Lake." },
+  { q: "Why add my area?", a: "Local businesses win on local searches. Adding your area surfaces searches like best dentist in your neighbourhood." },
   { q: "How should I use these keywords?", a: "Use the words naturally in your page titles, service pages, Google Business Profile description and FAQ. Don't repeat them unnaturally." },
   { q: "Is it free and do I need to sign up?", a: "It is free and needs no signup or email." },
 ];

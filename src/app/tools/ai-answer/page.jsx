@@ -30,7 +30,7 @@ export default function Page() {
       description={DESCRIPTION}
       crumb="AI answer check"
       h1="Does AI recommend your business?"
-      intro="An AI answer check asks an AI assistant the question your customers ask, like best dentist in Salt Lake, and shows whether your business is named. You also see the websites the answer was built from."
+      intro="An AI answer check asks an AI assistant the question your customers ask, like best dentist in your area, and shows whether your business is named. You also see the websites the answer was built from."
       howToName="How to check if AI assistants recommend your business"
       steps={STEPS}
       related={[{ href: "/tools/ai-visibility", label: "AI crawler check" }, { href: "/tools/backlink-finder", label: "Backlink & citation finder" }, { href: "/tools/keyword-ideas", label: "Keyword research tool" }]}

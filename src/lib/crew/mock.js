@@ -13,7 +13,7 @@ export function mockLlm({ includeBadDraft = true } = {}) {
   return async ({ name, tools, prompt }) => {
     const facts = (await tools.find((t) => t.name === "get_facts").run({})).facts;
     const ids = [...prompt.matchAll(/\[([a-z_0-9]+)\]/g)].map((m) => m[1]);
-    const area = (facts.address || "").split(",").slice(-3, -2)[0]?.trim() || "Kolkata";
+    const area = (facts.address || "").split(",").slice(-3, -2)[0]?.trim() || "";
 
     if (name === "planner") {
       const issues = JSON.parse(prompt.slice(prompt.indexOf("["), prompt.lastIndexOf("]") + 1));
@@ -23,10 +23,10 @@ export function mockLlm({ includeBadDraft = true } = {}) {
     }
     if (name === "gbp") {
       const actions = [
-        { type: "gbp_description", title: "Rewrite the profile description", content: `${facts.name} is a ${String(facts.googleCategory || "business").toLowerCase()} in ${area}, Kolkata. Call ${facts.phone || "<FILL: phone>"} or visit us at ${facts.address}. <FILL: services offered and what to expect on a first visit>`, rationale: "Profile description is thin; uses verified details only.", issue_ids: ids.slice(0, 1) },
+        { type: "gbp_description", title: "Rewrite the profile description", content: `${facts.name} is a ${String(facts.googleCategory || "business").toLowerCase()} in ${area || "its area"}. Call ${facts.phone || "<FILL: phone>"} or visit us at ${facts.address}. <FILL: services offered and what to expect on a first visit>`, rationale: "Profile description is thin; uses verified details only.", issue_ids: ids.slice(0, 1) },
         { type: "review_requests", title: "Review-request kit for the front desk", content: `Hi! Thanks for visiting ${facts.name}. If you were happy with your visit, a short Google review helps others find us: <FILL: review link>`, rationale: "Review volume is below nearby competitors.", issue_ids: ids.slice(0, 1) },
       ];
-      if (includeBadDraft) actions.push({ type: "gbp_post", title: "Launch post", content: `We are the best clinic in Kolkata with 20 years of experience and 5,000 happy patients. 100% guaranteed results!`, rationale: "Attract customers.", issue_ids: ids.slice(0, 1) });
+      if (includeBadDraft) actions.push({ type: "gbp_post", title: "Launch post", content: `We are the best clinic in town with 20 years of experience and 5,000 happy patients. 100% guaranteed results!`, rationale: "Attract customers.", issue_ids: ids.slice(0, 1) });
       return { actions, notes: "scripted", needs_owner_input: ["services offered", "review link"] };
     }
     if (name === "seo") return { edits: [

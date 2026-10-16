@@ -32,7 +32,7 @@ export function KeywordIdeasTool() {
             <input id="kw-seed" className={fieldClass} value={seed} onChange={(e) => setSeed(e.target.value)} placeholder="dentist" required />
           </Field>
           <Field id="kw-area" label="Your area" optional>
-            <input id="kw-area" className={fieldClass} value={area} onChange={(e) => setArea(e.target.value)} placeholder="Salt Lake" />
+            <input id="kw-area" className={fieldClass} value={area} onChange={(e) => setArea(e.target.value)} placeholder="Your neighbourhood" />
           </Field>
         </div>
       </ToolForm>

@@ -21,10 +21,10 @@ const ACTIONS = [
 const FIELDS = [
   ["name", "Business name", "Sharma Dental Care"],
   ["vertical", "Vertical", "Dental clinic"],
-  ["city", "City / area", "Ballygunge, Kolkata"],
+  ["city", "City / area", "Neighbourhood, city"],
   ["website", "Website", "https://example.com"],
   ["gbpLink", "Google Maps link", "https://maps.app.goo.gl/…"],
-  ["phone", "Phone", "+91 XXXXX XXXXX"],
+  ["phone", "Phone", "+country code and number"],
   ["ownerEmail", "Owner's sign-in email", "owner@business.com — links their dashboard"],
   ["services", "Services", "Implants, root canal, braces"],
   ["notes", "Notes", "Closed Sundays. Dr. Sharma is the draw."],

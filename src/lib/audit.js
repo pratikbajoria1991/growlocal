@@ -357,7 +357,7 @@ function auditSEO(html, url, schemas, cr = false) {
   // lang attribute (5)
   const lang = grab(/<html[^>]+lang=["']([^"']+)["']/i, html);
   if (lang) c.push(check("seo_lang", `Language declared: lang="${lang}"`, 5, 5));
-  else c.push(check("seo_lang", "No lang attribute on <html>", 0, 5, `Set <html lang="en-IN"> (or your locale). Helps search engines and AI systems serve your page to the right audience.`));
+  else c.push(check("seo_lang", "No lang attribute on <html>", 0, 5, `Set <html lang="en"> (or your locale, e.g. en-GB, en-IN). Helps search engines and AI systems serve your page to the right audience.`));
 
   // Open Graph (10)
   const og = ["og:title", "og:description", "og:image"].filter((p) => new RegExp(`property=["']${p}["']`, "i").test(html));
@@ -517,11 +517,11 @@ function auditGEO(html, schemas) {
 
   // tel: link (12)
   if (/<a[^>]+href=["']tel:/i.test(html)) c.push(check("geo_tel_link", "Tap-to-call link present", 12, 12));
-  else c.push(check("geo_tel_link", "No tap-to-call link", 0, 12, `Add <a href="tel:+91XXXXXXXXXX">Call us</a> in your header and footer. Most local searches happen on mobile, and a tap-to-call button is the shortest path from search to enquiry.`));
+  else c.push(check("geo_tel_link", "No tap-to-call link", 0, 12, `Add <a href="tel:+[country code][number]">Call us</a> in your header and footer. Most local searches happen on mobile, and a tap-to-call button is the shortest path from search to enquiry.`));
 
   // Telephone in schema (6)
   if (biz?.telephone) c.push(check("geo_tel_schema", "Telephone in structured data", 6, 6));
-  else c.push(check("geo_tel_schema", "No telephone in schema", 0, 6, `Add "telephone": "+91-XXXXX-XXXXX" to your LocalBusiness schema in full international format.`));
+  else c.push(check("geo_tel_schema", "No telephone in schema", 0, 6, `Add "telephone": "+[country code]-[number]" to your LocalBusiness schema in full international format.`));
 
   // Map presence (6)
   if (/(google\.[a-z.]+\/maps|maps\.app\.goo\.gl|goo\.gl\/maps|maps\.googleapis\.com|openstreetmap)/i.test(html)) {

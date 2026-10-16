@@ -30,7 +30,7 @@ export function MapsRankTool() {
             <input id="mr-kw" className={fieldClass} value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="dentist" required />
           </Field>
           <Field id="mr-area" label="Area">
-            <input id="mr-area" className={fieldClass} value={area} onChange={(e) => setArea(e.target.value)} placeholder="Salt Lake, Kolkata" required />
+            <input id="mr-area" className={fieldClass} value={area} onChange={(e) => setArea(e.target.value)} placeholder="Neighbourhood, city" required />
           </Field>
         </div>
       </ToolForm>

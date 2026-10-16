@@ -40,7 +40,7 @@ export async function classifyReply(text) {
     const a = await ask(text, {
       intent: {
         type: "choice",
-        instructions: "A Kolkata business owner replied to a cold outreach message about Google Maps and AI search visibility. What do they want?",
+        instructions: "A local business owner replied to a cold outreach message about Google Maps and AI search visibility. What do they want?",
         criteria: REPLY_INTENTS,
       },
     });

@@ -9,7 +9,7 @@ export const metadata = toolMetadata({ path: PATH, title: TITLE, description: DE
 
 const STEPS = [
   { name: "Enter your business", text: "Use your business name as it appears on Google, or your website." },
-  { name: "Choose the search and area", text: "Type what customers search, like dentist, and the area, like Salt Lake, Kolkata." },
+  { name: "Choose the search and area", text: "Type what customers search, like dentist, and the area, like a neighbourhood and city." },
   { name: "Compare with the top three", text: "See your position, and the ratings and review counts of the businesses above you." },
 ];
 

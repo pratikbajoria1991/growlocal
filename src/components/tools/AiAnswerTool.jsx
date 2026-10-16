@@ -30,7 +30,7 @@ export function AiAnswerTool() {
             <input id="aa-kw" className={fieldClass} value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="dentist" required />
           </Field>
           <Field id="aa-area" label="Area">
-            <input id="aa-area" className={fieldClass} value={area} onChange={(e) => setArea(e.target.value)} placeholder="Salt Lake, Kolkata" required />
+            <input id="aa-area" className={fieldClass} value={area} onChange={(e) => setArea(e.target.value)} placeholder="Neighbourhood, city" required />
           </Field>
         </div>
       </ToolForm>

@@ -1,7 +1,7 @@
 import { ShieldCheck, UserCheck, HandHelping } from "lucide-react";
 
 // A faithful miniature of the real report. The numbers come from one real audit
-// of a Kolkata eye clinic (business not named) — see the caption.
+// of an eye clinic (business not named) — see the caption.
 const CATS = [
   { k: "SEO", label: "Search", v: 20, c: "#22c55e" },
   { k: "AEO", label: "AI answers", v: 12, c: "#0ea5e9" },
@@ -9,7 +9,7 @@ const CATS = [
 ];
 const ISSUES = [
   { who: "We do it", icon: ShieldCheck, t: "Website unreadable to AI assistants", e: "AEO 12/100 — no FAQ or question-led answers" },
-  { who: "Needs your OK", icon: UserCheck, t: "Not in Google's top 20 for “eye clinic in Bhowanipore”", e: "Measured from a live Google search" },
+  { who: "Needs your OK", icon: UserCheck, t: "Not in Google's top 20 for its own category and area", e: "Measured from a live Google search" },
   { who: "Needs your help", icon: HandHelping, t: "2 reviews vs a median of 105", e: "Top 3 results for the same search" },
 ];
 
@@ -67,7 +67,7 @@ export function ReportMock() {
           </ul>
         </div>
       </div>
-      <figcaption className="mt-3 text-[11px] text-forest-900/65 text-center">Sample report — numbers from a real audit of a Kolkata eye clinic, name withheld.</figcaption>
+      <figcaption className="mt-3 text-[11px] text-forest-900/65 text-center">Sample report — numbers from a real audit of an eye clinic, name withheld.</figcaption>
     </figure>
   );
 }

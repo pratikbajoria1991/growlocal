@@ -132,7 +132,7 @@ export function CrewConsole() {
           >
             <h2 className="font-display text-lg">Start a crew run</h2>
             <label className="block"><span className="block text-xs text-forest-900/70 mb-1.5">Business (Google Maps link, or name + area)</span>
-              <input className={field} value={form.input} onChange={(e) => setForm({ ...form, input: e.target.value })} placeholder="Orchid Skin Klinic, New Alipore, Kolkata" required /></label>
+              <input className={field} value={form.input} onChange={(e) => setForm({ ...form, input: e.target.value })} placeholder="Business name, neighbourhood, city" required /></label>
             <label className="block"><span className="block text-xs text-forest-900/70 mb-1.5">Website (optional)</span>
               <input className={field} value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} placeholder="https://…" /></label>
             <label className="block"><span className="block text-xs text-forest-900/70 mb-1.5">Goal</span>

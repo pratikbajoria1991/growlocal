@@ -13,7 +13,6 @@
 
 export const MARKET = {
   asOf: "2–15 Oct 2026",
-  city: "Kolkata",
   businesses: 3591,
   auditedSites: 2244,
   rankedSearches: 3591, // one live search per business for its own category + area

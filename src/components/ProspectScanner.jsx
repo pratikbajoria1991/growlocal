@@ -84,7 +84,7 @@ export function ProspectScanner() {
         <label htmlFor="p-urls" className="block text-sm font-medium mb-2">Websites to scan</label>
         <textarea
           id="p-urls" rows={5} value={raw} onChange={(e) => setRaw(e.target.value)}
-          placeholder={"Sharma Dental, sharmadental.com\nballygungeclinic.in\nRoyal Spa — royalspakolkata.com"}
+          placeholder={"Sharma Dental, sharmadental.com\nballygungeclinic.in\nRoyal Spa — royalspa.com"}
           className="w-full px-4 py-3 rounded-xl border hairline bg-canvas-50 outline-none focus:border-indigo-500/60 text-sm leading-relaxed resize-y font-mono transition-colors"
         />
         <p className="text-xs text-forest-900/65 mt-2">
