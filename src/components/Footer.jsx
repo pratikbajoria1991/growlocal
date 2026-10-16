@@ -5,17 +5,17 @@ import { Logo } from "./Logo";
 
 export function Footer() {
   return (
-    <footer className="border-t hairline mt-24">
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12">
+    <footer className="mt-24 bg-forest-900 text-canvas-50">
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 pt-16 pb-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 mb-3">
-              <Logo className="w-6 h-6" />
-              <span className="font-display text-base">{BRAND.name}</span>
+              <Logo className="w-7 h-7" />
+              <span className="font-display text-xl font-bold tracking-[-0.04em]">{BRAND.name}</span>
             </Link>
-            <p className="text-sm text-forest-900/70 leading-relaxed max-w-xs mb-4">{BRAND.tagline}</p>
+            <p className="text-sm text-canvas-50/70 leading-relaxed max-w-xs mb-4">{BRAND.tagline}</p>
 
-            <a href={`mailto:${BRAND.email}`} className="inline-flex items-center gap-2 text-sm text-forest-900/65 hover:text-forest-900 transition-colors">
+            <a href={`mailto:${BRAND.email}`} className="inline-flex items-center gap-2 text-sm text-canvas-50/75 hover:text-white transition-colors">
               <Mail className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
               {BRAND.email}
             </a>
@@ -23,11 +23,11 @@ export function Footer() {
 
           {Object.entries(FOOTER_NAV).map(([group, links]) => (
             <nav key={group} aria-label={group}>
-              <h2 className="text-[11px] uppercase tracking-[0.15em] text-forest-900/65 mb-3">{group}</h2>
-              <ul className="space-y-2">
+              <h2 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-indigo-300 mb-4">{group}</h2>
+              <ul className="space-y-2.5">
                 {links.map((l) => (
                   <li key={l.href}>
-                    <Link href={l.href} className="text-sm text-forest-900/65 hover:text-forest-900 transition-colors">
+                    <Link href={l.href} className="text-sm text-canvas-50/75 hover:text-white transition-colors">
                       {l.label}
                     </Link>
                   </li>
@@ -37,7 +37,7 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mt-10 pt-5 border-t hairline flex flex-col sm:flex-row justify-between gap-2 text-xs text-forest-900/65">
+        <div className="mt-14 pt-6 border-t border-canvas-50/10 flex flex-col sm:flex-row justify-between gap-2 text-xs text-canvas-50/60">
           <div>© {new Date().getFullYear()} {BRAND.name}</div>
           <div>Serving businesses across {BRAND.country}</div>
         </div>

@@ -10,7 +10,7 @@ const CATEGORIES = [
   ["education", "Coaching or education"], ["shop", "Shop or retail"], ["other", "Something else"],
 ];
 
-const field = "w-full rounded-xl border hairline bg-white px-4 py-3 text-[16px] focus:outline-none focus:border-indigo-500/60 focus:shadow-[0_0_0_4px_rgba(99,102,241,0.12)]";
+const field = "w-full rounded-xl border hairline bg-white px-4 py-3 text-[16px] focus:outline-none focus:border-indigo-500/60 focus:shadow-[0_0_0_4px_rgba(34,197,94,0.15)]";
 
 export function BacklinkFinder() {
   const [url, setUrl] = useState("");

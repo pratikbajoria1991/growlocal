@@ -9,29 +9,41 @@ module.exports = {
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       colors: {
-        // Growlocal identity: indigo-black neutral + a bold indigo/violet brand
-        // accent. `emerald` is kept separate and reserved for real pass/fail
-        // data semantics (checkmarks, grades, deltas) — brand color and
-        // success color are not the same thing, even when both used to be green.
+        // Growlocal identity: warm off-white canvas, deep green-black ink and one
+        // bright green brand accent. The accent keeps the token name `indigo` so
+        // every page restyles from here; 500 and lighter are for fills, borders
+        // and dark backgrounds, 600 and darker are for text on light backgrounds
+        // (AA contrast). `emerald` stays reserved for pass/fail data.
         canvas: {
-          50: "#fbfaff",
-          100: "#f5f3fc",
-          200: "#eae6f7",
+          50: "#fbfaf6",
+          100: "#f3f2ea",
+          200: "#e6e5da",
         },
         forest: {
-          900: "#0e0b1f",
-          800: "#171332",
-          700: "#241d4d",
-          600: "#362b6e",
-          500: "#4c3d8f",
+          900: "#0a1f16",
+          800: "#10291e",
+          700: "#173628",
+          600: "#22493a",
+          500: "#2f604c",
+        },
+        sage: {
+          50: "#f1f5ef",
+          100: "#e4ece0",
         },
         indigo: {
-          DEFAULT: "#6366f1",
-          300: "#a5b4fc",
-          400: "#818cf8",
-          500: "#6366f1",
-          600: "#4f46e5",
-          700: "#4338ca",
+          DEFAULT: "#22c55e",
+          200: "#bbf7d0",
+          300: "#86efac",
+          400: "#4ade80",
+          500: "#22c55e",
+          600: "#15803d",
+          700: "#166534",
+          800: "#14532d",
+        },
+        brand: {
+          DEFAULT: "#2fdd6a",
+          hover: "#25c95d",
+          ink: "#052e14",
         },
         emerald: {
           DEFAULT: "#10b981",
@@ -56,11 +68,12 @@ module.exports = {
         },
       },
       boxShadow: {
-        lift: "0 1px 2px rgba(11,26,18,0.04), 0 8px 24px rgba(11,26,18,0.06)",
-        glow: "0 0 0 1px rgba(126,226,62,0.2), 0 12px 40px rgba(126,226,62,0.15)",
+        lift: "0 1px 2px rgba(10,31,22,0.04), 0 8px 24px rgba(10,31,22,0.06)",
+        glow: "0 0 0 1px rgba(47,221,106,0.25), 0 12px 40px rgba(47,221,106,0.18)",
       },
       borderRadius: {
         "4xl": "2rem",
+        "5xl": "2.5rem",
       },
     },
   },

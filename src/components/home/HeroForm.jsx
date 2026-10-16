@@ -16,9 +16,9 @@ export function HeroForm() {
     router.push(`/audit?${isMaps ? "link" : "url"}=${encodeURIComponent(s)}`);
   }
   return (
-    <form onSubmit={go} className="w-full max-w-xl" aria-label="Free visibility audit">
+    <form onSubmit={go} className="w-full max-w-xl mx-auto" aria-label="Free visibility audit">
       <label htmlFor="hero-input" className="sr-only">Your website or Google Maps link</label>
-      <div className="flex flex-col sm:flex-row gap-2 p-1.5 rounded-2xl bg-white border hairline shadow-lift focus-within:border-indigo-500/50 focus-within:shadow-[0_0_0_4px_rgba(99,102,241,0.12)] transition-shadow">
+      <div className="flex flex-col sm:flex-row gap-2 p-1.5 rounded-3xl sm:rounded-full bg-white border hairline shadow-lift focus-within:border-indigo-500/60 focus-within:shadow-[0_0_0_4px_rgba(34,197,94,0.15)] transition-shadow">
         <input
           id="hero-input"
           value={v}
@@ -27,13 +27,13 @@ export function HeroForm() {
           autoComplete="off"
           spellCheck={false}
           placeholder="Your website or Google Maps link"
-          className="flex-1 min-w-0 bg-transparent px-4 py-3 text-[15px] placeholder:text-forest-900/65 focus:outline-none"
+          className="flex-1 min-w-0 bg-transparent px-5 py-3 text-[15px] placeholder:text-forest-900/65 focus:outline-none"
         />
-        <button type="submit" className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl btn-premium text-white font-medium text-[15px] whitespace-nowrap">
+        <button type="submit" className="inline-flex items-center justify-center gap-2 px-6 py-3 btn-premium text-[15px] whitespace-nowrap">
           Audit it free <ArrowRight className="w-4 h-4" aria-hidden="true" />
         </button>
       </div>
-      <p className="mt-2.5 text-xs text-forest-900/65 px-1">Free, no signup, results in seconds</p>
+      <p className="mt-3 text-xs text-forest-900/65 text-center">Free, no signup, results in seconds</p>
     </form>
   );
 }

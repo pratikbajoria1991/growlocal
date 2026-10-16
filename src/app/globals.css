@@ -5,10 +5,11 @@
 @tailwind utilities;
 
 :root {
-  --canvas: #fbfaff;
-  --forest: #0e0b1f;
-  --indigo: #6366f1;
-  --rule: rgba(14, 11, 31, 0.08);
+  --canvas: #fbfaf6;
+  --forest: #0a1f16;
+  --indigo: #15803d;
+  --brand: #2fdd6a;
+  --rule: rgba(10, 31, 22, 0.09);
 
   /* One easing curve and one duration scale across the whole product.
      Inconsistent motion is the fastest way to make an interface feel cheap. */
@@ -33,15 +34,12 @@ html, body {
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
-/* Ambient mesh gradient — the Growlocal signature */
+/* Quiet warm backdrop: one soft green glow at the top, nothing else. */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background:
-    radial-gradient(ellipse 70% 50% at 15% -10%, rgba(99, 102, 241, 0.12), transparent 65%),
-    radial-gradient(ellipse 50% 40% at 90% 10%, rgba(56, 189, 248, 0.07), transparent 65%),
-    radial-gradient(ellipse 60% 50% at 50% 110%, rgba(139, 92, 246, 0.07), transparent 65%);
+  background: radial-gradient(ellipse 60% 40% at 50% -12%, rgba(47, 221, 106, 0.10), transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -51,12 +49,12 @@ main, header, footer, aside { position: relative; z-index: 1; }
 .font-display {
   font-family: var(--font-display), var(--font-inter), system-ui, sans-serif;
   font-weight: 600;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
 }
 
 .hairline { border-color: var(--rule); }
 
-::selection { background: var(--indigo); color: white; }
+::selection { background: var(--brand); color: var(--forest); }
 
 input, textarea, select, button { font-family: inherit; }
 
@@ -68,16 +66,53 @@ input, textarea, select, button { font-family: inherit; }
 }
 :focus:not(:focus-visible) { outline: none; }
 
-/* Premium button treatment for primary CTAs — gradient + lift on hover,
-   the "this costs money and it's worth it" signal on the highest-intent
-   actions (hero CTA, submit buttons), not applied everywhere indiscriminately. */
+/* Primary CTA: bright green pill with dark ink (white on this green fails
+   contrast). Defined after the utilities so it wins over `text-white` and
+   `rounded-xl` on every page that uses it. */
 .btn-premium {
-  background: #4f46e5;
-  box-shadow: 0 1px 2px rgba(14,11,31,0.12);
-  transition: background-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+  background: var(--brand);
+  color: #052e14;
+  border-radius: 9999px;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(10,31,22,0.10);
+  transition: background-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease), transform var(--fast) var(--ease);
 }
-.btn-premium:hover { background: #4338ca; box-shadow: 0 2px 8px rgba(67,56,202,0.35); }
-.btn-premium:active { background: #3730a3; }
+.btn-premium:hover { background: #25c95d; box-shadow: 0 6px 20px rgba(47,221,106,0.35); }
+.btn-premium:active { background: #1fb453; transform: translateY(1px); }
+.btn-premium:disabled { box-shadow: none; }
+
+/* Secondary CTA: outlined pill. */
+.btn-ghost {
+  border: 1.5px solid currentColor;
+  border-radius: 9999px;
+  font-weight: 600;
+  transition: background-color var(--fast) var(--ease);
+}
+.btn-ghost:hover { background: rgba(10,31,22,0.05); }
+
+/* Small pill label above section headings. In the components layer so
+   utilities (e.g. normal-case) can adjust it per use. */
+@layer components {
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  background: white;
+  border: 1px solid var(--rule);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--forest);
+}
+.eyebrow-dark {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.14);
+  color: #f3f2ea;
+}
+}
 
 /* Numbers in tables and scores shouldn't jitter as they animate. */
 .tabular-nums { font-variant-numeric: tabular-nums; }
@@ -91,7 +126,7 @@ summary { list-style: none; }
 
 /* Skeleton shimmer for loading states */
 .shimmer {
-  background: linear-gradient(90deg, rgba(14,11,31,0.04) 25%, rgba(14,11,31,0.08) 37%, rgba(14,11,31,0.04) 63%);
+  background: linear-gradient(90deg, rgba(10,31,22,0.04) 25%, rgba(10,31,22,0.08) 37%, rgba(10,31,22,0.04) 63%);
   background-size: 400% 100%;
   animation: shimmer 1.4s ease-in-out infinite;
 }
@@ -103,24 +138,24 @@ summary { list-style: none; }
 /* Grid backdrop for hero */
 .grid-bg {
   background-image:
-    linear-gradient(rgba(14,11,31,0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(14,11,31,0.035) 1px, transparent 1px);
+    linear-gradient(rgba(10,31,22,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(10,31,22,0.035) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent 75%);
   -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent 75%);
 }
 
 /* Scrollbars: present but quiet. */
-* { scrollbar-width: thin; scrollbar-color: rgba(14,11,31,0.18) transparent; }
+* { scrollbar-width: thin; scrollbar-color: rgba(10,31,22,0.18) transparent; }
 *::-webkit-scrollbar { width: 10px; height: 10px; }
 *::-webkit-scrollbar-track { background: transparent; }
 *::-webkit-scrollbar-thumb {
-  background: rgba(14,11,31,0.16);
+  background: rgba(10,31,22,0.16);
   border-radius: 999px;
   border: 3px solid transparent;
   background-clip: content-box;
 }
-*::-webkit-scrollbar-thumb:hover { background: rgba(14,11,31,0.28); background-clip: content-box; }
+*::-webkit-scrollbar-thumb:hover { background: rgba(10,31,22,0.28); background-clip: content-box; }
 
 /* Respect the OS-level motion preference. Anyone who has asked their system
    to reduce motion should not be given parallax, count-ups or slides. */
@@ -144,16 +179,23 @@ summary { list-style: none; }
 
 /* ---- Homepage polish ---- */
 .text-gradient {
-  background: linear-gradient(120deg, #4f46e5 0%, #8b5cf6 55%, #38bdf8 110%);
+  background: linear-gradient(120deg, #15803d 0%, #22c55e 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 .text-gradient-light {
-  background: linear-gradient(120deg, #c7d2fe 0%, #e9d5ff 60%, #bae6fd 110%);
+  background: linear-gradient(120deg, #86efac 0%, #2fdd6a 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 .fade-up { animation: fadeUp 0.7s var(--ease) both; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+
+/* Soft sunburst behind the product mock, drawn in CSS (no image). */
+.burst {
+  background: repeating-conic-gradient(from 0deg at 50% 50%, rgba(10,31,22,0.035) 0deg 6deg, transparent 6deg 12deg);
+  mask-image: radial-gradient(circle at 50% 50%, black 20%, transparent 68%);
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, black 20%, transparent 68%);
+}

@@ -1,5 +1,5 @@
 import "./globals.css";
-import { Bricolage_Grotesque, Inter, JetBrains_Mono } from "next/font/google";
+import { Geist, Inter, JetBrains_Mono } from "next/font/google";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { SiteChrome } from "@/components/SiteChrome";
@@ -8,7 +8,7 @@ import { JsonLd, organizationSchema, webSiteSchema, serviceSchema } from "@/lib/
 
 // Self-hosted at build time — no request to fonts.googleapis.com on page load,
 // no render-blocking stylesheet, no layout shift when the font swaps in.
-const display = Bricolage_Grotesque({
+const display = Geist({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   variable: "--font-display",

@@ -49,6 +49,8 @@ const PRINCIPLES = [
   { icon: ShieldCheck, t: "Measured, not promised", d: "We don’t promise rankings. We show before-and-after audit scores and your own Google numbers, and say plainly what we can’t measure yet." },
 ];
 
+const H2 = "font-display font-bold text-3xl sm:text-5xl leading-[1.04] tracking-[-0.045em] text-balance";
+
 export default function Home() {
   return (
     <>
@@ -63,59 +65,61 @@ export default function Home() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 grid-bg pointer-events-none" aria-hidden="true" />
-        <div className="relative max-w-6xl mx-auto px-5 sm:px-8 pt-12 sm:pt-20 pb-16 sm:pb-24 grid lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-14 items-center">
-          <div>
-            <a href="#data" className="inline-flex items-center gap-1.5 text-sm text-forest-900/65 hover:text-indigo-700 underline-offset-4 hover:underline mb-6">
-              We audited {MARKET.businesses.toLocaleString("en-IN")} Kolkata businesses. See what we found <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
-            </a>
+        <div className="relative max-w-7xl mx-auto px-5 sm:px-8 pt-14 sm:pt-24 text-center">
+          <a href="#data" className="eyebrow normal-case tracking-normal text-[13px] font-medium hover:border-indigo-500/60 transition-colors mb-8">
+            <span className="w-1.5 h-1.5 rounded-full bg-brand shrink-0" aria-hidden="true" />
+            We audited {MARKET.businesses.toLocaleString("en-IN")} Kolkata businesses. See what we found <ArrowRight className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+          </a>
 
-            <h1 className="font-display text-[2.4rem] leading-[1.04] sm:text-5xl lg:text-[3.6rem] tracking-[-0.04em] mb-6 text-balance">
-              When customers ask Google or ChatGPT, be the name it gives.
-            </h1>
+          <h1 className="font-display font-bold text-[2.6rem] leading-[1.02] sm:text-6xl lg:text-[5rem] tracking-[-0.05em] mb-7 max-w-5xl mx-auto text-balance">
+            When customers ask Google or ChatGPT, be the name it gives.
+          </h1>
 
-            <p className="text-lg sm:text-xl text-forest-900/65 mb-8 max-w-xl leading-relaxed text-pretty">
-              Growlocal is a done-for-you local marketing service. It audits how you show up on Google Maps, search and AI assistants, then fixes it every week. Anything risky waits for your OK.
-            </p>
+          <p className="text-lg sm:text-xl text-forest-900/70 mb-10 max-w-2xl mx-auto leading-relaxed text-pretty">
+            Growlocal is a done-for-you local marketing service. It audits how you show up on Google Maps, search and AI assistants, then fixes it every week. Anything risky waits for your OK.
+          </p>
 
-            <HeroForm />
+          <HeroForm />
 
-            <ul className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-forest-900/70">
-              {["No agency retainer", "No dashboard to learn", "Built in Kolkata"].map((t) => (
-                <li key={t} className="inline-flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-indigo-600" aria-hidden="true" /> {t}
-                </li>
-              ))}
-            </ul>
-          </div>
+          <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-forest-900/75">
+            {["No agency retainer", "No dashboard to learn", "Built in Kolkata"].map((t) => (
+              <li key={t} className="inline-flex items-center gap-1.5">
+                <span className="w-4 h-4 rounded-full bg-brand/25 flex items-center justify-center"><Check className="w-3 h-3 text-indigo-700" aria-hidden="true" /></span> {t}
+              </li>
+            ))}
+          </ul>
+        </div>
 
-          <Reveal enabled y={28} delay={0.1}>
-            <div className="lg:ml-auto max-w-md mx-auto lg:max-w-none">
+        {/* Product showcase on a sage panel */}
+        <div className="relative max-w-7xl mx-auto px-5 sm:px-8 mt-14 sm:mt-20">
+          <div className="relative rounded-4xl sm:rounded-5xl bg-sage-50 border hairline overflow-hidden px-4 sm:px-10 pt-10 sm:pt-16 pb-8">
+            <div className="absolute inset-0 burst pointer-events-none" aria-hidden="true" />
+            <Reveal enabled delay={0.1} className="relative max-w-xl mx-auto">
               <ReportMock />
-            </div>
-          </Reveal>
+            </Reveal>
+          </div>
         </div>
       </section>
 
       {/* The data — real, aggregated, dated */}
-      <section id="data" className="bg-forest-900 text-canvas-50 relative overflow-hidden">
-        <div className="relative max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-24">
-          <Reveal>
-            <p className="text-sm text-indigo-300 mb-3">The state of local visibility in {MARKET.city}</p>
-            <h2 className="font-display text-3xl sm:text-5xl leading-[1.05] tracking-[-0.035em] mb-4 max-w-3xl text-balance">
-              We audited {MARKET.businesses.toLocaleString("en-IN")} local businesses. <span className="text-indigo-300">Most websites are unreadable to the AI assistants customers now ask.</span>
+      <section id="data" className="mt-20 sm:mt-28 bg-forest-900 text-canvas-50 relative overflow-hidden">
+        <div className="relative max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
+          <Reveal className="text-center max-w-4xl mx-auto">
+            <p className="eyebrow eyebrow-dark mb-6"><Sparkles className="w-3.5 h-3.5 text-brand" aria-hidden="true" />The state of local visibility in {MARKET.city}</p>
+            <h2 className="font-display font-bold text-3xl sm:text-5xl lg:text-6xl leading-[1.04] tracking-[-0.045em] text-balance">
+              We audited {MARKET.businesses.toLocaleString("en-IN")} local businesses. <span className="text-brand">Most websites are unreadable to the AI assistants customers now ask.</span>
             </h2>
           </Reveal>
-          <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-canvas-50/10 rounded-3xl overflow-hidden border border-canvas-50/10">
+          <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {STATS.map((s, i) => (
-              <Reveal key={s.t} delay={i * 0.06} className="bg-forest-900 p-7">
-                <div className="font-display text-6xl sm:text-7xl tracking-[-0.04em] text-indigo-200 leading-none mb-4"><CountUp to={s.n} suffix={s.s} /></div>
-                <div className="font-medium mb-1.5 leading-snug">{s.t}</div>
-                <div className="text-sm text-canvas-50/75 leading-relaxed">{s.d}</div>
+              <Reveal key={s.t} delay={i * 0.06} className="rounded-3xl bg-forest-800 border border-canvas-50/10 p-7">
+                <div className="font-display font-bold text-6xl sm:text-7xl tracking-[-0.05em] text-brand leading-none mb-5"><CountUp to={s.n} suffix={s.s} /></div>
+                <div className="font-semibold mb-1.5 leading-snug">{s.t}</div>
+                <div className="text-sm text-canvas-50/70 leading-relaxed">{s.d}</div>
               </Reveal>
             ))}
           </div>
-          <p className="mt-6 text-xs text-canvas-50/70 max-w-3xl leading-relaxed">
+          <p className="mt-8 text-xs text-canvas-50/60 max-w-3xl mx-auto text-center leading-relaxed">
             Method: live Google Maps data and our own SEO/AEO/GEO website audit, run {MARKET.asOf} on {MARKET.businesses.toLocaleString("en-IN")} unique Kolkata
             businesses — clinics, dental and eye care, fertility, interiors, real estate, salons and professional services. This is the set we chose to
             audit, not a random sample of every business in the city. Search position is one Google search per business; it varies by where the customer stands.
@@ -124,28 +128,33 @@ export default function Home() {
       </section>
 
       {/* Three surfaces */}
-      <section className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-24">
-        <Reveal className="max-w-2xl mb-10">
-          <h2 className="font-display text-3xl sm:text-5xl leading-[1.05] tracking-[-0.035em] mb-4 text-balance">
+      <section className="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
+        <Reveal className="max-w-3xl mx-auto text-center mb-14">
+          <h2 className={`${H2} mb-5`}>
             Three places. Each reads your business differently.
           </h2>
-          <p className="text-forest-900/65 leading-relaxed text-pretty">
+          <p className="text-lg text-forest-900/70 leading-relaxed text-pretty">
             Google search, Google Maps, and AI assistants that simply name two or three options. Keeping all three current is a weekly job most owners
             don&apos;t have time for. That job is what we take off your hands.
           </p>
         </Reveal>
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-3 gap-5">
           {Object.entries(WEBSITE_AUDIT_CATEGORIES).map(([k, m], i) => {
             const Icon = ICONS[k];
             return (
               <Reveal key={k} delay={i * 0.07}>
-                <article className="h-full rounded-4xl border hairline bg-white p-7 hover:shadow-lift hover:-translate-y-0.5 transition-all duration-300">
-                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-5" style={{ background: `${m.color}1a` }}>
-                    <Icon className="w-5 h-5" style={{ color: m.color }} aria-hidden="true" />
+                <article className="h-full rounded-4xl border hairline bg-white overflow-hidden hover:shadow-lift hover:-translate-y-0.5 transition-all duration-300">
+                  <div className="relative h-36 flex items-center justify-center overflow-hidden" style={{ background: `${m.color}24` }} aria-hidden="true">
+                    <div className="absolute inset-0 burst" />
+                    <div className="relative w-16 h-16 rounded-2xl bg-white shadow-lift flex items-center justify-center">
+                      <Icon className="w-7 h-7" style={{ color: m.color }} />
+                    </div>
                   </div>
-                  <p className="text-sm font-medium text-forest-900/70 mb-1.5">{m.tag}</p>
-                  <h3 className="font-display text-xl mb-2.5">{m.name}</h3>
-                  <p className="text-sm text-forest-900/60 leading-relaxed">{m.description}</p>
+                  <div className="p-7">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-forest-900/65 mb-2">{m.tag}</p>
+                    <h3 className="font-display font-bold text-2xl tracking-[-0.03em] mb-3">{m.name}</h3>
+                    <p className="text-forest-900/70 leading-relaxed">{m.description}</p>
+                  </div>
                 </article>
               </Reveal>
             );
@@ -154,129 +163,144 @@ export default function Home() {
       </section>
 
       {/* The crew */}
-      <section className="border-y hairline bg-white/60">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-24">
-          <Reveal className="max-w-2xl mb-12">
-            <h2 className="font-display text-3xl sm:text-5xl leading-[1.05] tracking-[-0.035em] mb-4 text-balance">
+      <section className="bg-sage-50 border-y hairline">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28 grid lg:grid-cols-[0.85fr_1.15fr] gap-12 lg:gap-16">
+          <Reveal className="lg:sticky lg:top-28 self-start">
+            <h2 className={`${H2} mb-5`}>
               A team of specialist AI agents. <span className="text-indigo-600">Checked by code, then by you.</span>
             </h2>
-            <p className="text-forest-900/65 leading-relaxed text-pretty">
+            <p className="text-lg text-forest-900/70 leading-relaxed text-pretty mb-8">
               One goal, six stages. The agents draft; independent checks decide what survives; your own audit proves it worked before anything ships.
             </p>
+            <div className="flex flex-col items-start gap-2 text-sm text-forest-900/80">
+              {[[ShieldCheck, "We do it: low-risk work that ships on its own"], [UserCheck, "You approve: name, category, hours, sensitive replies"], [HandHelping, "We need you: photos and review requests"]].map(([I, t]) => (
+                <span key={t} className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full border hairline bg-white"><I className="w-4 h-4 text-indigo-600 shrink-0" aria-hidden="true" />{t}</span>
+              ))}
+            </div>
           </Reveal>
-          <ol className="relative max-w-3xl border-l-2 border-indigo-600/20 ml-3 space-y-8">
+          <ol className="grid sm:grid-cols-2 gap-4">
             {CREW.map((c, i) => (
-              <li key={c.t} className="relative pl-8">
-                <span className="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-white border-2 border-indigo-600 text-indigo-700 text-sm font-semibold flex items-center justify-center tabular-nums">{i + 1}</span>
-                <h3 className="font-display text-xl mb-1 flex items-center gap-2"><c.icon className="w-4 h-4 text-indigo-600" aria-hidden="true" />{c.t}</h3>
-                <p className="text-forest-900/65 leading-relaxed max-w-xl">{c.d}</p>
+              <li key={c.t} className="rounded-3xl bg-white border hairline p-6">
+                <div className="flex items-center justify-between mb-5">
+                  <span className="w-11 h-11 rounded-2xl bg-brand/20 flex items-center justify-center"><c.icon className="w-5 h-5 text-indigo-700" aria-hidden="true" /></span>
+                  <span className="font-mono text-xs text-forest-900/60 tabular-nums" aria-hidden="true">{String(i + 1).padStart(2, "0")} / {String(CREW.length).padStart(2, "0")}</span>
+                </div>
+                <h3 className="font-display font-bold text-xl tracking-[-0.03em] mb-1.5">{c.t}</h3>
+                <p className="text-forest-900/70 leading-relaxed text-[15px]">{c.d}</p>
               </li>
             ))}
           </ol>
-          <Reveal className="mt-8 flex flex-wrap gap-2 text-xs text-forest-900/75">
-            {[[ShieldCheck, "We do it: low-risk work that ships on its own"], [UserCheck, "You approve: name, category, hours, sensitive replies"], [HandHelping, "We need you: photos and review requests"]].map(([I, t]) => (
-              <span key={t} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border hairline bg-white"><I className="w-3.5 h-3.5 text-indigo-600" aria-hidden="true" />{t}</span>
-            ))}
-          </Reveal>
         </div>
       </section>
 
       {/* Principles + definition */}
-      <section className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-24">
-        <Reveal className="max-w-3xl mb-10">
-          <p className="font-display text-2xl sm:text-3xl leading-snug tracking-[-0.02em] text-balance">{BRAND.definition}</p>
+      <section className="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
+        <Reveal className="max-w-4xl mx-auto text-center mb-14">
+          <p className="font-display font-semibold text-2xl sm:text-4xl leading-[1.2] tracking-[-0.035em] text-balance">{BRAND.definition}</p>
         </Reveal>
-        <div className="grid md:grid-cols-3 gap-x-10 gap-y-8">
+        <div className="grid md:grid-cols-3 gap-5">
           {PRINCIPLES.map((p) => (
-            <div key={p.t} className="border-t-2 border-forest-900 pt-5">
-              <h3 className="font-display text-xl mb-2 flex items-center gap-2"><p.icon className="w-5 h-5 text-indigo-600" aria-hidden="true" />{p.t}</h3>
-              <p className="text-forest-900/65 leading-relaxed">{p.d}</p>
+            <div key={p.t} className="rounded-4xl bg-white border hairline p-8">
+              <span className="w-12 h-12 rounded-2xl bg-forest-900 flex items-center justify-center mb-6"><p.icon className="w-5 h-5 text-brand" aria-hidden="true" /></span>
+              <h3 className="font-display font-bold text-2xl tracking-[-0.03em] mb-3">{p.t}</h3>
+              <p className="text-forest-900/70 leading-relaxed">{p.d}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* A week with Growlocal */}
-      <section className="max-w-6xl mx-auto px-5 sm:px-8 pb-16 sm:pb-24">
-        <Reveal>
-          <h2 className="font-display text-3xl sm:text-5xl leading-[1.05] tracking-[-0.035em] mb-10 max-w-2xl text-balance">
+      <section className="max-w-7xl mx-auto px-5 sm:px-8 pb-20 sm:pb-28">
+        <Reveal className="max-w-3xl mx-auto text-center mb-14">
+          <h2 className={H2}>
             What does Growlocal do for my business?
           </h2>
         </Reveal>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {WEEK.map((w, i) => (
-            <Reveal key={w.t} delay={i * 0.06}>
-              <div className="h-full rounded-4xl border hairline bg-white p-6">
-                <div className="w-10 h-10 rounded-xl bg-indigo-500/12 flex items-center justify-center mb-4">
-                  <w.icon className="w-5 h-5 text-indigo-600" aria-hidden="true" />
+          {WEEK.map((w, i) => {
+            const dark = i === 0;
+            return (
+              <Reveal key={w.t} delay={i * 0.06}>
+                <div className={`h-full rounded-4xl p-7 ${dark ? "bg-forest-900 text-canvas-50" : "bg-white border hairline"}`}>
+                  <div className={`w-11 h-11 rounded-2xl flex items-center justify-center mb-6 ${dark ? "bg-brand" : "bg-brand/20"}`}>
+                    <w.icon className={`w-5 h-5 ${dark ? "text-brand-ink" : "text-indigo-700"}`} aria-hidden="true" />
+                  </div>
+                  <h3 className="font-display font-bold text-xl tracking-[-0.03em] mb-2">{w.t}</h3>
+                  <p className={`text-[15px] leading-relaxed ${dark ? "text-canvas-50/75" : "text-forest-900/70"}`}>{w.d}</p>
                 </div>
-                <h3 className="font-display text-lg mb-2">{w.t}</h3>
-                <p className="text-sm text-forest-900/60 leading-relaxed">{w.d}</p>
-              </div>
-            </Reveal>
-          ))}
+              </Reveal>
+            );
+          })}
         </div>
       </section>
 
       {/* How it works — mirrors HowTo schema */}
-      <section className="max-w-6xl mx-auto px-5 sm:px-8 py-16 border-t hairline">
-        <h2 className="font-display text-3xl sm:text-5xl leading-[1.05] tracking-[-0.035em] mb-10 max-w-2xl text-balance">
-          How do I get started?
-        </h2>
-        <ol className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {HOW_IT_WORKS.map((s, i) => (
-            <li key={s.name} className="border-t-2 border-forest-900/10 pt-4">
-              <div className="font-display text-3xl text-indigo-600 mb-2">{String(i + 1).padStart(2, "0")}</div>
-              <h3 className="font-medium mb-1.5">{s.name}</h3>
-              <p className="text-sm text-forest-900/60 leading-relaxed">{s.text}</p>
-            </li>
-          ))}
-        </ol>
+      <section className="bg-sage-50 border-y hairline">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
+          <h2 className={`${H2} mb-14 text-center`}>
+            How do I get started?
+          </h2>
+          <ol className="relative grid sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-6">
+            <span className="hidden lg:block absolute top-6 left-[12.5%] right-[12.5%] border-t-2 border-dashed border-forest-900/15" aria-hidden="true" />
+            {HOW_IT_WORKS.map((s, i) => (
+              <li key={s.name} className="relative text-center">
+                <div className="relative w-12 h-12 mx-auto rounded-full bg-brand text-brand-ink font-display font-bold text-lg flex items-center justify-center mb-5 ring-8 ring-sage-50 tabular-nums">{i + 1}</div>
+                <h3 className="font-display font-bold text-xl tracking-[-0.03em] mb-2">{s.name}</h3>
+                <p className="text-[15px] text-forest-900/70 leading-relaxed max-w-xs mx-auto">{s.text}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
       </section>
 
       {/* Products */}
-      <section className="max-w-6xl mx-auto px-5 sm:px-8 py-16 border-t hairline">
-        <h2 className="font-display text-3xl sm:text-5xl leading-[1.05] tracking-[-0.035em] mb-10 max-w-2xl text-balance">
+      <section className="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
+        <h2 className={`${H2} mb-14 max-w-3xl mx-auto text-center`}>
           Start free. Hand it over when you&apos;re ready.
         </h2>
         <div className="grid md:grid-cols-2 gap-5">
-          {PRODUCTS.map((p, i) => (
-            <article key={p.id} className={`rounded-4xl p-8 ${i === 1 ? "bg-forest-900 text-canvas-50" : "bg-white border hairline"}`}>
-              <div className={`text-sm mb-2 ${i === 1 ? "text-indigo-300" : "text-forest-900/65"}`}>
-                {p.name}{p.statusNote ? ` · ${p.statusNote}` : ""}
-              </div>
-              <h3 className="font-display text-2xl mb-3">{p.headline}</h3>
-              <p className={`text-sm leading-relaxed mb-5 ${i === 1 ? "text-canvas-50/70" : "text-forest-900/60"}`}>{p.blurb}</p>
-              <ul className="space-y-2 mb-7">
-                {p.bullets.map((b) => (
-                  <li key={b} className={`text-sm flex items-start gap-2.5 ${i === 1 ? "text-canvas-50/80" : "text-forest-900/70"}`}>
-                    <Check className="w-4 h-4 mt-0.5 shrink-0 text-indigo-500" aria-hidden="true" />
-                    {b}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href={p.href}
-                className={`inline-flex items-center gap-2 px-5 py-3 rounded-xl font-medium text-sm transition-colors ${i === 1 ? "btn-premium text-white" : "bg-forest-900 text-canvas-50 hover:bg-forest-800"}`}
-              >
-                {p.cta} <ArrowRight className="w-4 h-4" aria-hidden="true" />
-              </Link>
-            </article>
-          ))}
+          {PRODUCTS.map((p, i) => {
+            const dark = i === 1;
+            return (
+              <article key={p.id} className={`flex flex-col rounded-4xl sm:rounded-5xl p-8 sm:p-10 ${dark ? "bg-forest-900 text-canvas-50" : "bg-white border hairline"}`}>
+                <div className={`text-sm font-semibold mb-3 ${dark ? "text-brand" : "text-indigo-700"}`}>
+                  {p.name}{p.statusNote ? ` · ${p.statusNote}` : ""}
+                </div>
+                <h3 className="font-display font-bold text-3xl tracking-[-0.04em] mb-4">{p.headline}</h3>
+                <p className={`leading-relaxed mb-6 ${dark ? "text-canvas-50/75" : "text-forest-900/70"}`}>{p.blurb}</p>
+                <ul className="space-y-2.5 mb-8">
+                  {p.bullets.map((b) => (
+                    <li key={b} className={`text-[15px] flex items-start gap-2.5 ${dark ? "text-canvas-50/85" : "text-forest-900/80"}`}>
+                      <span className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${dark ? "bg-brand" : "bg-brand/25"}`}>
+                        <Check className={`w-3 h-3 ${dark ? "text-brand-ink" : "text-indigo-700"}`} aria-hidden="true" />
+                      </span>
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href={p.href}
+                  className={`mt-auto self-start inline-flex items-center gap-2 px-6 py-3 text-[15px] ${dark ? "btn-premium" : "rounded-full font-semibold bg-forest-900 text-canvas-50 hover:bg-forest-800 transition-colors"}`}
+                >
+                  {p.cta} <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                </Link>
+              </article>
+            );
+          })}
         </div>
       </section>
 
       {/* FAQ — rendered text matches the FAQPage schema above */}
-      <section className="max-w-3xl mx-auto px-5 sm:px-8 py-16 border-t hairline">
-        <h2 className="font-display text-3xl sm:text-5xl leading-[1.05] tracking-[-0.035em] mb-10 text-balance">
+      <section className="max-w-7xl mx-auto px-5 sm:px-8 pb-20 sm:pb-28 grid lg:grid-cols-[0.8fr_1.2fr] gap-10 lg:gap-16">
+        <h2 className={`${H2} lg:sticky lg:top-28 self-start`}>
           Frequently asked questions
         </h2>
-        <div className="divide-y divide-forest-900/[0.07]">
+        <div className="space-y-3">
           {HOME_FAQ.map((f) => (
-            <details key={f.q} className="group py-5">
+            <details key={f.q} className="group rounded-3xl bg-white border hairline px-6 py-5 open:shadow-lift transition-shadow">
               <summary className="flex items-start justify-between gap-4 cursor-pointer list-none">
-                <h3 className="font-display text-lg sm:text-xl leading-snug">{f.q}</h3>
-                <span className="mt-1 shrink-0 w-5 h-5 rounded-full border hairline flex items-center justify-center text-forest-900/65 group-open:rotate-45 transition-transform" aria-hidden="true">+</span>
+                <h3 className="font-display font-semibold text-lg leading-snug tracking-[-0.02em]">{f.q}</h3>
+                <span className="mt-0.5 shrink-0 w-7 h-7 rounded-full bg-brand/20 text-indigo-800 flex items-center justify-center group-open:rotate-45 group-open:bg-brand transition-all" aria-hidden="true">+</span>
               </summary>
               <p className="mt-3 text-forest-900/70 leading-relaxed text-pretty">{f.a}</p>
             </details>
@@ -285,18 +309,19 @@ export default function Home() {
       </section>
 
       {/* CTA */}
-      <section className="max-w-4xl mx-auto px-5 sm:px-8 py-16">
-        <div className="rounded-4xl bg-forest-900 text-canvas-50 p-10 sm:p-14 relative overflow-hidden">
+      <section className="max-w-7xl mx-auto px-5 sm:px-8">
+        <div className="relative rounded-4xl sm:rounded-5xl bg-brand text-forest-900 px-6 py-14 sm:p-20 overflow-hidden text-center">
+          <div className="absolute inset-0 burst pointer-events-none" aria-hidden="true" />
           <div className="relative">
-            <h2 className="font-display text-3xl sm:text-5xl leading-[1.05] tracking-[-0.035em] mb-4 text-balance">See what&apos;s costing you customers.</h2>
-            <p className="text-canvas-50/70 mb-8 max-w-lg leading-relaxed text-pretty">
+            <h2 className="font-display font-bold text-4xl sm:text-6xl leading-[1.02] tracking-[-0.05em] mb-5 max-w-3xl mx-auto text-balance">See what&apos;s costing you customers.</h2>
+            <p className="text-lg text-forest-900/80 mb-10 max-w-xl mx-auto leading-relaxed text-pretty">
               Start with the free audit. No signup, no sales call. If you&apos;d rather not fix it yourself, we&apos;ll handle it.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link href="/audit" className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl btn-premium text-white font-semibold">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link href="/audit" className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full bg-forest-900 text-canvas-50 font-semibold hover:bg-forest-800 transition-colors">
                 Get my free audit <ArrowRight className="w-4 h-4" aria-hidden="true" />
               </Link>
-              <Link href="/managed#apply" className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-canvas-50/20 hover:bg-canvas-50/10 font-medium transition-colors">
+              <Link href="/managed#apply" className="inline-flex items-center justify-center gap-2 px-7 py-4 btn-ghost text-forest-900">
                 Apply for a founding slot
               </Link>
             </div>

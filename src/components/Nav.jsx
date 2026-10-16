@@ -18,23 +18,23 @@ export function Nav() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-40 backdrop-blur-xl bg-canvas-50/85 border-b hairline shadow-[0_1px_0_rgba(14,11,31,0.02)]">
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 sm:h-[4.5rem] flex items-center justify-between">
+    <header className="sticky top-0 z-40 backdrop-blur-xl bg-canvas-50/90 border-b hairline">
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 h-16 sm:h-[4.5rem] flex items-center justify-between gap-6">
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
           <Logo className="w-7 h-7" />
-          <span className="font-display text-lg tracking-tight">{BRAND.name}</span>
+          <span className="font-display text-xl font-bold tracking-[-0.04em]">{BRAND.name}</span>
         </Link>
 
-        {/* Pill-tab navigation — one active-state pill slides between links. */}
-        <nav className="hidden md:flex items-center gap-0.5 p-1 rounded-full border hairline bg-white/70 text-sm">
+        <nav className="hidden md:flex items-center gap-1 text-[15px]">
           {NAV.map((l) => {
             const active = pathname === l.href || (l.href !== "/" && pathname?.startsWith(l.href));
             return (
               <Link
                 key={l.href}
                 href={l.href}
-                className={`px-4 py-2 rounded-full font-medium transition-colors ${
-                  active ? "bg-forest-900 text-canvas-50" : "text-forest-900/60 hover:text-forest-900 hover:bg-forest-900/5"
+                aria-current={active ? "page" : undefined}
+                className={`px-3.5 py-2 rounded-full font-medium transition-colors ${
+                  active ? "text-forest-900 bg-forest-900/[0.06]" : "text-forest-900/70 hover:text-forest-900"
                 }`}
               >
                 {l.label}
@@ -43,15 +43,15 @@ export function Nav() {
           })}
         </nav>
 
-        <div className="hidden md:flex items-center gap-1 shrink-0">
+        <div className="hidden md:flex items-center gap-2 shrink-0">
           {user ? (
-            <Link href="/app" className="px-4 py-2.5 rounded-xl btn-premium text-white hover:brightness-105 transition-all font-medium inline-flex items-center gap-1.5 text-sm">
+            <Link href="/app" className="px-5 py-2.5 btn-premium inline-flex items-center gap-1.5 text-sm">
               <LayoutDashboard className="w-3.5 h-3.5" /> Dashboard
             </Link>
           ) : (
             <>
-              <Link href="/login" className="px-3 py-2 text-sm text-forest-900/60 hover:text-forest-900 transition-colors">Sign in</Link>
-              <Link href="/audit" className="ml-1 px-4 py-2.5 rounded-xl btn-premium text-white font-medium text-sm inline-flex items-center gap-1.5">
+              <Link href="/login" className="px-5 py-2 btn-ghost text-sm text-forest-900">Sign in</Link>
+              <Link href="/audit" className="px-5 py-2.5 btn-premium text-sm inline-flex items-center gap-1.5">
                 Free audit <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
               </Link>
             </>
@@ -71,7 +71,7 @@ export function Nav() {
                 {l.label}
               </Link>
             ))}
-            <Link href={user ? "/app" : "/login"} onClick={() => setOpen(false)} className="py-3 text-sm font-medium text-indigo-600">
+            <Link href={user ? "/app" : "/login"} onClick={() => setOpen(false)} className="mt-3 mb-1 py-3 btn-premium text-sm text-center">
               {user ? "Dashboard →" : "Sign in →"}
             </Link>
           </nav>

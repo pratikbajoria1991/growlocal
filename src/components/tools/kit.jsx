@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Loader2, AlertCircle } from "lucide-react";
 
 export const fieldClass =
-  "w-full rounded-xl border hairline bg-white px-4 py-3 text-[16px] focus:outline-none focus:border-indigo-500/60 focus:shadow-[0_0_0_4px_rgba(99,102,241,0.12)]";
+  "w-full rounded-xl border hairline bg-white px-4 py-3 text-[16px] focus:outline-none focus:border-indigo-500/60 focus:shadow-[0_0_0_4px_rgba(34,197,94,0.15)]";
 
 export function useToolRun(endpoint) {
   const [loading, setLoading] = useState(false);

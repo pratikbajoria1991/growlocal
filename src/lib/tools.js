@@ -61,7 +61,7 @@ export const TOOLS = [
     description:
       "Checks which directories and business profiles your site links to, compares a competitor, and finds sites that already mention you so you can ask for a link.",
     icon: "Link2",
-    color: "#6366f1",
+    color: "#16a34a",
     group: "Links",
     free: true,
   },
