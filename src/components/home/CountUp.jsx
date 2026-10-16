@@ -14,7 +14,8 @@ export function CountUp({ to, suffix = "", duration = 1400 }) {
       io.disconnect();
       const t0 = performance.now();
       const tick = (t) => {
-        const p = Math.min(1, (t - t0) / duration);
+        // rAF can stamp the first frame before t0; clamp so it never goes negative.
+        const p = Math.min(1, Math.max(0, (t - t0) / duration));
         setN(Math.round(to * (1 - Math.pow(1 - p, 3))));
         if (p < 1) requestAnimationFrame(tick);
       };

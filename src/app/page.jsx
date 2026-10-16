@@ -1,10 +1,10 @@
 import Link from "next/link";
 import {
   ArrowRight, Search, Bot, MapPin, Check, Sparkles, MessageCircle, FileText, LineChart,
-  Radar, Route, Users, ScanSearch, FlaskConical, BookCheck, ShieldCheck, UserCheck, HandHelping, Scale,
+  Radar, Route, Users, ScanSearch, FlaskConical, BookCheck, ShieldCheck, UserCheck, HandHelping, Scale, BadgeCheck,
 } from "lucide-react";
 import { BRAND, PRODUCTS, WEBSITE_AUDIT_CATEGORIES, HOME_FAQ, HOW_IT_WORKS } from "@/lib/brand";
-import { MARKET } from "@/lib/market-data";
+import { MARKET, HIGH_TICKET } from "@/lib/market-data";
 import { JsonLd, faqSchema, webPageSchema, breadcrumbSchema, howToSchema } from "@/lib/schema";
 import { HeroForm } from "@/components/home/HeroForm";
 import { ReportMock } from "@/components/home/ReportMock";
@@ -125,6 +125,90 @@ export default function Home() {
             audit, not a random sample of every business in the city. Search position is one Google search per business; it varies by where the customer stands.
           </p>
         </div>
+      </section>
+
+      {/* High-ticket study — verified against live Google, aggregates only */}
+      <section id="high-ticket" className="max-w-7xl mx-auto px-5 sm:px-8 pt-20 sm:pt-28">
+        <Reveal className="max-w-3xl mx-auto text-center mb-12">
+          <p className="eyebrow mb-6"><BadgeCheck className="w-3.5 h-3.5 text-indigo-600" aria-hidden="true" />Verified study · {HIGH_TICKET.asOf}</p>
+          <h2 className={`${H2} mb-5`}>
+            {HIGH_TICKET.listings.toLocaleString("en-IN")} high-ticket Kolkata businesses. <span className="text-indigo-600">Every number checked against live Google.</span>
+          </h2>
+          <p className="text-lg text-forest-900/70 leading-relaxed text-pretty">
+            Skin and aesthetic clinics, jewellers, furniture, bathroom and tiles, home automation, specialist clinics, architects, wedding venues and more:
+            {" "}{HIGH_TICKET.categories} categories where one customer is worth thousands of rupees.
+          </p>
+        </Reveal>
+
+        {/* Validation strip */}
+        <div className="rounded-4xl bg-forest-900 text-canvas-50 p-6 sm:p-8 grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            [`${HIGH_TICKET.liveChecked}/${HIGH_TICKET.listings}`, "re-checked on live Google before use", `${HIGH_TICKET.liveNotFound} not found, 0 errors`],
+            [HIGH_TICKET.liveCorrected, "listings corrected to live values", "review counts and ratings had changed since collection"],
+            [HIGH_TICKET.heldOut, "set aside before any outreach", "branches already covered by a flagship, unconfirmed categories, temporarily closed"],
+            [HIGH_TICKET.sitesChecked, "websites fetched and scored", `${HIGH_TICKET.sitesBroken} no longer load: dead domains, unreachable or 404`],
+          ].map(([n, t, d]) => (
+            <div key={t} className="min-w-0">
+              <div className="font-display font-bold text-3xl sm:text-4xl tracking-[-0.04em] text-brand tabular-nums mb-2">{n}</div>
+              <div className="font-semibold text-sm leading-snug mb-1">{t}</div>
+              <div className="text-xs text-canvas-50/65 leading-relaxed">{d}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Findings */}
+        <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            [HIGH_TICKET.aeoBelow50, "%", "of their websites are hard for AI assistants to read", `${HIGH_TICKET.sitesScored} sites scored; median ${HIGH_TICKET.medianAeo}/100, and ${HIGH_TICKET.aeoZero} scored zero`],
+            [HIGH_TICKET.reviewGap, "%", "have far fewer reviews than the top 3", `at least 1.5× fewer for the same search (of 804 comparable); the median gap is ${HIGH_TICKET.medianReviewGap}×`],
+            [HIGH_TICKET.notInTop20, "%", "don’t appear in Google’s top 20", "for their own category and neighbourhood, one live search each"],
+            [HIGH_TICKET.noWebsite, "%", "link no website on Google", "the profile is the only page a customer can find"],
+          ].map(([n, s, t, d], i) => (
+            <Reveal key={t} delay={i * 0.06} className="rounded-3xl bg-white border hairline p-6">
+              <div className="font-display font-bold text-5xl tracking-[-0.05em] leading-none mb-4"><CountUp to={n} suffix={s} /></div>
+              <div className="font-semibold leading-snug mb-1.5">{t}</div>
+              <div className="text-sm text-forest-900/65 leading-relaxed">{d}</div>
+            </Reveal>
+          ))}
+        </div>
+
+        {/* Work plan + limits */}
+        <div className="mt-4 grid lg:grid-cols-[1.3fr_1fr] gap-4">
+          <div className="rounded-3xl bg-sage-50 border hairline p-6 sm:p-8">
+            <h3 className="font-display font-bold text-2xl tracking-[-0.03em] mb-1">{HIGH_TICKET.fixes.toLocaleString("en-IN")} prioritised fixes</h3>
+            <p className="text-sm text-forest-900/70 mb-6">Each one tied to a measured finding, with who acts and how we will measure it.</p>
+            <div className="flex h-3 rounded-full overflow-hidden mb-5" role="img" aria-label={`${HIGH_TICKET.weDo} we do, ${HIGH_TICKET.afterOk} after the owner's OK, ${HIGH_TICKET.needOwner} need the owner`}>
+              <span className="bg-forest-900" style={{ width: `${(HIGH_TICKET.weDo / HIGH_TICKET.fixes) * 100}%` }} />
+              <span className="bg-brand" style={{ width: `${(HIGH_TICKET.afterOk / HIGH_TICKET.fixes) * 100}%` }} />
+              <span className="bg-forest-900/20" style={{ width: `${(HIGH_TICKET.needOwner / HIGH_TICKET.fixes) * 100}%` }} />
+            </div>
+            <ul className="grid sm:grid-cols-3 gap-4 text-sm">
+              {[
+                ["bg-forest-900", HIGH_TICKET.weDo, "We do it"],
+                ["bg-brand", HIGH_TICKET.afterOk, "We do it after your OK"],
+                ["bg-forest-900/20", HIGH_TICKET.needOwner, "We need something from you"],
+              ].map(([c, n, t]) => (
+                <li key={t} className="flex items-start gap-2.5">
+                  <span className={`mt-1.5 w-2.5 h-2.5 rounded-full shrink-0 ${c}`} aria-hidden="true" />
+                  <span><span className="font-display font-bold text-xl tabular-nums block">{n.toLocaleString("en-IN")} <span className="text-sm font-medium text-forest-900/60">({Math.round((n / HIGH_TICKET.fixes) * 100)}%)</span></span>{t}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-3xl bg-white border hairline p-6 sm:p-8">
+            <h3 className="font-display font-bold text-2xl tracking-[-0.03em] mb-4">What we couldn&apos;t measure yet</h3>
+            <ul className="space-y-3 text-sm">
+              {HIGH_TICKET.notMeasured.map(([m, why]) => (
+                <li key={m}><span className="font-semibold">{m}:</span> <span className="text-forest-900/70">{why}.</span></li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <p className="mt-6 text-xs text-forest-900/60 max-w-3xl mx-auto text-center leading-relaxed">
+          Method: Google Maps listings collected for high-ticket categories across Kolkata, each re-fetched from the live Google Places API on {HIGH_TICKET.asOf},
+          ranked with one live search for its own category and area, and its website scored with our SEO/AEO/GEO audit. Percentages are of all {HIGH_TICKET.listings} listings
+          unless stated. This is the set we chose to study, not a random sample. No business is named.
+        </p>
       </section>
 
       {/* Three surfaces */}

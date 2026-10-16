@@ -22,3 +22,42 @@ export const MARKET = {
   deadSites: 68, // websites linked on a Google profile whose domain no longer resolves
   fewPhotos: 29, // % with fewer than 10 profile photos
 };
+
+// High-ticket Kolkata study, 15 October 2026 — aggregates only, no business named.
+// Source: output/gbp-leads/third-high-ticket/
+// Growlocal-Kolkata-HighTicket3-Verified-Outreach-2026-10-15.xlsx (Outreach Pack +
+// Held & Excluded = 851 listings; Sheet vs Live Google; Audit & Recommendations;
+// Not Yet Measured) and pipeline.log for website reachability.
+export const HIGH_TICKET = {
+  asOf: "15 Oct 2026",
+  listings: 851,
+  categories: 17, // excluding 21 listings whose category was unconfirmed
+  // Validation: every listing re-fetched from live Google before use.
+  liveChecked: 851,
+  liveNotFound: 0,
+  liveCorrected: 271, // scraped values that no longer matched live Google (271 review counts, 15 ratings)
+  heldOut: 176, // branches covered by a flagship account, unconfirmed categories, temporarily closed
+  // Findings
+  notInTop20: 32, // % (270 of 851) absent from Google's top 20 for their own category + area
+  reviewGap: 53, // % (429 of 804 comparable) with at least 1.5x fewer reviews than the top 3
+  medianReviewGap: 1.7, // median ratio of top-3 reviews to theirs
+  noWebsite: 25, // % (214 of 851) linking no website on Google
+  sitesScored: 569,
+  aeoBelow50: 89, // % (504 of 569) of their own websites under 50/100 for AI answer readiness
+  aeoZero: 85, // websites scoring 0/100
+  medianAeo: 24,
+  sitesChecked: 442, // distinct websites
+  sitesBroken: 32, // 24 dead domains, 6 unreachable, 2 returning 404
+  // Work plan
+  fixes: 2110,
+  weDo: 1074,
+  afterOk: 494,
+  needOwner: 542,
+  // What the study could not measure, and why
+  notMeasured: [
+    ["Review velocity", "needs two dated snapshots; measurable from 29 Oct 2026"],
+    ["Calls and direction requests", "needs Google Business Profile access after the owner connects"],
+    ["Review recency", "Google's API returns the 5 most relevant reviews, not the newest"],
+    ["Photo counts above 10", "the API returns at most 10 photos"],
+  ],
+};
