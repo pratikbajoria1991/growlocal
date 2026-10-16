@@ -9,7 +9,9 @@ separate copies or other apps for Growlocal changes.
   appears in `npx vercel ls growlocal` — the command sometimes exits without
   deploying, so check before saying it's live.
 - Market numbers shown on the site live in `src/lib/market-data.js`
-  (`MARKET` = 3 Oct 2026 audit, `HIGH_TICKET` = 15 Oct 2026 workbook).
+  (`MARKET` = all batches 2–15 Oct 2026 combined and de-duplicated, 3,591
+  businesses; `HIGH_TICKET` = 15 Oct 2026 workbook). When a new batch lands,
+  recompute MARKET over every batch's final.json with the rules in the file.
   Publish aggregates only; never a business's name, phone or email.
 - Design tokens are in `tailwind.config.js` and `src/app/globals.css`. The
   green brand accent keeps the token name `indigo`; 600+ for text on light
