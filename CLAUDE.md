@@ -15,3 +15,9 @@ separate copies or other apps for Growlocal changes.
   green brand accent keeps the token name `indigo`; 600+ for text on light
   backgrounds, `brand` / `.btn-premium` for primary buttons.
 - The C: drive runs close to full. Delete `.next` after local builds.
+- Market: launch in India first (₹ pricing, DPDP, Indian directories stay).
+  Site copy is location-neutral — never name a city in visible text. When a
+  first country abroad is chosen, add a per-country config (currency,
+  payments, privacy law, directory list) rather than editing copy inline.
+- GitHub: origin is github.com/pratikbajoria1991/growlocal (PUBLIC). Push the
+  working branch after committing; never commit .env files or lead data.
