@@ -1,26 +1,31 @@
 // Aggregate findings from Growlocal's own audits — no business is named.
-// Source: live Google Places data + our SEO/AEO/GEO website audit, run on
-// 1,856 unique Kolkata businesses on 1–3 October 2026. The list is the
-// businesses we chose to audit (clinics, dental, eye care, fertility,
-// interiors, real estate, salons, professional services and similar), not a
-// random sample of every business in the city — the page says so.
-// Regenerate by re-running the pipeline in output/gbp-leads/ and updating here.
+// Source: live Google Places data + our SEO/AEO/GEO website audit, combined
+// across every batch in output/gbp-leads/ (final.json in high-ticket/ 2 Oct,
+// previous-1000/ 3 Oct, second-high-ticket/ 6 Oct, third-high-ticket/ 15 Oct):
+// 3,851 rows -> 18 no longer on Google -> 242 duplicates removed by Maps CID
+// -> 3,591 unique businesses. The list is the businesses we chose to audit
+// (clinics, skin and dental care, jewellers, furniture, interiors, real estate,
+// salons, professional services and similar), not a random sample of every
+// business in the city — the page says so.
+// Definitions: website %s are over listings whose site was fetched (site.ok);
+// review gap is over listings with a comparable top 3; the rest are over all
+// unique businesses. Regenerate with the same rules when a batch is added.
 
 export const MARKET = {
-  asOf: "3 Oct 2026",
+  asOf: "2–15 Oct 2026",
   city: "Kolkata",
-  businesses: 1856,
-  auditedSites: 1151,
-  rankedSearches: 1324,
-  aeoBelow50: 85, // % of audited websites scoring under 50/100 for AI answer-engine readiness
-  geoBelow50: 80, // % under 50/100 for local/entity signals
+  businesses: 3591,
+  auditedSites: 2244,
+  rankedSearches: 3591, // one live search per business for its own category + area
+  aeoBelow50: 87, // % of audited websites scoring under 50/100 for AI answer-engine readiness
+  geoBelow50: 77, // % under 50/100 for local/entity signals
   noFaqSchema: 89, // % of audited websites with no FAQPage markup
-  notInTop20: 38, // % absent from Google's top 20 for their own category + area
+  notInTop20: 36, // % absent from Google's top 20 for their own category + area
   top3: 26, // % in the top 3 for that search
-  reviewGap: 58, // % with at least 1.5x fewer reviews than the top-3 results for their own search
+  reviewGap: 58, // % (of 3,432 comparable) with at least 1.5x fewer reviews than the top-3 results
   noWebsite: 29, // % whose Google profile links no website
-  deadSites: 68, // websites linked on a Google profile whose domain no longer resolves
-  fewPhotos: 29, // % with fewer than 10 profile photos
+  deadSites: 118, // distinct websites linked on a Google profile whose domain no longer resolves
+  fewPhotos: 27, // % with fewer than 10 profile photos
 };
 
 // High-ticket Kolkata study, 15 October 2026 — aggregates only, no business named.

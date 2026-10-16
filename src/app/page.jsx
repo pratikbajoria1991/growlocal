@@ -121,7 +121,8 @@ export default function Home() {
           </div>
           <p className="mt-8 text-xs text-canvas-50/60 max-w-3xl mx-auto text-center leading-relaxed">
             Method: live Google Maps data and our own SEO/AEO/GEO website audit, run {MARKET.asOf} on {MARKET.businesses.toLocaleString("en-IN")} unique Kolkata
-            businesses — clinics, dental and eye care, fertility, interiors, real estate, salons and professional services. This is the set we chose to
+            businesses — clinics, skin, dental and eye care, fertility, jewellers, furniture, bathroom and tiles, home automation, interiors, real estate,
+            salons and professional services. This is the set we chose to
             audit, not a random sample of every business in the city. Search position is one Google search per business; it varies by where the customer stands.
           </p>
         </div>
@@ -207,7 +208,7 @@ export default function Home() {
         <p className="mt-6 text-xs text-forest-900/60 max-w-3xl mx-auto text-center leading-relaxed">
           Method: Google Maps listings collected for high-ticket categories across Kolkata, each re-fetched from the live Google Places API on {HIGH_TICKET.asOf},
           ranked with one live search for its own category and area, and its website scored with our SEO/AEO/GEO audit. Percentages are of all {HIGH_TICKET.listings} listings
-          unless stated. This is the set we chose to study, not a random sample. No business is named.
+          unless stated. These {HIGH_TICKET.listings} are included in the {MARKET.businesses.toLocaleString("en-IN")} above. This is the set we chose to study, not a random sample. No business is named.
         </p>
       </section>
 
