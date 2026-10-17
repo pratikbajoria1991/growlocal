@@ -36,6 +36,11 @@ function decrypt({ iv, tag, data }) {
   return Buffer.concat([d.update(Buffer.from(data, "base64")), d.final()]).toString("utf8");
 }
 
+// Same AES-256-GCM sealing for other stored credentials (e.g. WordPress
+// application passwords).
+export const sealJson = (obj) => encrypt(JSON.stringify(obj));
+export const openJson = (sealed) => JSON.parse(decrypt(sealed));
+
 export async function saveToken(userId, payload) {
   await set(tokenKey(userId), { userId, stored_at: new Date().toISOString(), encrypted: encrypt(JSON.stringify(payload)) });
 }

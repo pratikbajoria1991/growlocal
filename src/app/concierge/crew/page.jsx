@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
 import { isAdmin } from "@/lib/clients";
 import { CrewConsole } from "@/components/CrewConsole";
+import { AlertsBanner } from "@/components/AlertsBanner";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Growth Crew", robots: { index: false, follow: false } };
@@ -23,6 +24,7 @@ export default async function CrewPage() {
           independent reviewer, website edits are measured with the real audit, and risky changes wait for the owner.
         </p>
       </div>
+      <AlertsBanner />
       <CrewConsole />
     </div>
   );

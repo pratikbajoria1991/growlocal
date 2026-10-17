@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Check, Clock, ShieldCheck, MessageCircle, UserCheck, Ban, Wrench, ClipboardList, LineChart, Search } from "lucide-react";
+import { ArrowRight, Check, Clock, ShieldCheck, MessageCircle, UserCheck, Ban, Wrench, ClipboardList, LineChart, Search, MapPin, Bot, Star, ListChecks } from "lucide-react";
 import { BRAND, PLANS, AUTONOMY, HOW_IT_WORKS } from "@/lib/brand";
 import { JsonLd, webPageSchema, breadcrumbSchema, howToSchema, faqSchema } from "@/lib/schema";
 import { FaqSection } from "@/components/FaqSection";
@@ -22,6 +22,14 @@ const STEP_ICONS = [Search, ClipboardList, Wrench, LineChart];
 
 // The comparison is about how the work is bought and proven, not a claim
 // about any particular agency's quality.
+// What the owner's dashboard shows every week. Keep each line true to what's measured.
+const TRACKED = [
+  { icon: MapPin, t: "Your map ranking, street by street", d: "Each keyword is searched on Google Maps from a grid of points around your business, so you see where you rank in your neighbourhood, not just at your front door." },
+  { icon: Bot, t: "Whether AI names you", d: "Each week we ask Google's AI, searching the web, for the best in your area, record whether you're named, and note the sites it relied on." },
+  { icon: Star, t: "Your reviews over time", d: "Rating and review count week by week, and your latest reviews in one place." },
+  { icon: ListChecks, t: "Every directory listing", d: "We submit your listings, check that live ones show your correct name and phone, and fix the ones that don't. You see each listing's status." },
+];
+
 const COMPARE = [
   ["Who does the work", "An account manager, often juggling many clients", "Our team with AI, on a fixed weekly plan"],
   ["What you see", "A report of what they did", "Every change logged, with your Google numbers before and after"],
@@ -111,6 +119,26 @@ export default async function Managed({ searchParams }) {
           <ContractCard tone="ok" icon={Wrench} title="We just do it" items={AUTONOMY.weDo} />
           <ContractCard tone="ask" icon={MessageCircle} title="We ask you first" items={AUTONOMY.youApprove} />
           <ContractCard tone="no" icon={Ban} title="We never do it" items={AUTONOMY.weNever} />
+        </div>
+      </section>
+
+      {/* What's tracked */}
+      <section className="max-w-6xl mx-auto px-5 sm:px-8 py-16 border-t hairline">
+        <div className="text-[11px] uppercase tracking-[0.15em] text-forest-900/65 mb-3">Measured every week</div>
+        <h2 className="font-display text-3xl sm:text-5xl leading-[1.05] tracking-[-0.03em] mb-4 max-w-2xl text-balance">
+          What will I see in my dashboard?
+        </h2>
+        <p className="text-forest-900/65 leading-relaxed mb-10 max-w-2xl text-pretty">
+          Not a list of tasks we say we did. Measurements taken from Google every week, so you can see whether the work is moving you.
+        </p>
+        <div className="grid sm:grid-cols-2 gap-4">
+          {TRACKED.map((x) => (
+            <div key={x.t} className="rounded-4xl border hairline bg-white p-7">
+              <span className="w-11 h-11 rounded-2xl bg-brand/20 flex items-center justify-center mb-5"><x.icon className="w-5 h-5 text-indigo-700" aria-hidden="true" /></span>
+              <h3 className="font-display font-bold text-xl tracking-[-0.03em] mb-2">{x.t}</h3>
+              <p className="text-forest-900/70 leading-relaxed">{x.d}</p>
+            </div>
+          ))}
         </div>
       </section>
 

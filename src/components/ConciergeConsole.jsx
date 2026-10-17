@@ -248,6 +248,9 @@ export function ConciergeConsole() {
             {/* Weekly visibility tracking — grid, AI answers, reviews */}
             <TrackingPanel client={active} />
 
+            {/* WordPress connector — backed-up, verified, undoable changes */}
+            <WebsitePanel client={active} />
+
             {/* Drafts */}
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-[11px] uppercase tracking-[0.15em] text-forest-900/65">Drafts ({drafts.length})</h3>
@@ -479,6 +482,117 @@ function TrackingPanel({ client }) {
               <Reviews snapshots={snaps} />
             </div>
           ) : <p className="text-xs text-forest-900/65 mt-3">No checks yet. Save keywords, then run a check.</p>}
+        </div>
+      )}
+    </section>
+  );
+}
+
+// WordPress connector: connect, apply a change (backed up and verified), undo.
+function WebsitePanel({ client }) {
+  const [data, setData] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(null);
+  const [msg, setMsg] = useState(null);
+  const [conn, setConn] = useState({ site: client.website || "", username: "", appPassword: "" });
+  const [change, setChange] = useState({ pageId: "", kind: "append_html", html: "", actionId: "" });
+
+  const load = useCallback(async () => {
+    const res = await fetch(`/api/concierge/website?clientId=${encodeURIComponent(client.id)}`);
+    if (res.ok) setData(await res.json());
+  }, [client.id]);
+  useEffect(() => { load(); }, [load]);
+
+  async function op(body, kind) {
+    setBusy(kind); setMsg(null);
+    try {
+      const res = await fetch("/api/concierge/website", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clientId: client.id, ...body }) });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d.error || "Failed.");
+      setMsg({ ok: true, text: kind === "connect" ? `Connected as ${d.user}.${d.unfilteredHtml ? "" : " This user can't save schema <script> tags; use an administrator for schema."}`
+        : kind === "apply" ? "Applied and verified on the live page. It's in the work log, and you can undo it below."
+        : kind === "undo" ? "Restored the page from its backup." : "Done." });
+      if (kind === "connect") setConn((c) => ({ ...c, appPassword: "" }));
+      if (kind === "apply") setChange((c) => ({ ...c, html: "" }));
+      await load();
+    } catch (e) { setMsg({ ok: false, text: e.message }); }
+    setBusy(null);
+  }
+
+  if (!data) return null;
+  const field = "w-full px-2.5 py-1.5 rounded-lg border hairline bg-white outline-none focus:border-indigo-500/60 text-sm";
+  const needsApproval = change.kind === "replace_content" || !data.autoWebsiteTech;
+
+  return (
+    <section className="mb-8">
+      <button onClick={() => setOpen((o) => !o)} className="w-full text-left flex items-center justify-between mb-2">
+        <h3 className="text-[11px] uppercase tracking-[0.15em] text-forest-900/65 inline-flex items-center gap-1.5">
+          <FileText className="w-3.5 h-3.5" /> Website connector — {data.connection ? `WordPress · ${new URL(data.connection.site).host}` : "not connected"}
+        </h3>
+        <span className="text-xs text-forest-900/65">{open ? "Hide" : "Show"}</span>
+      </button>
+      {open && (
+        <div className="mt-3 space-y-4">
+          {msg && <p role="status" className={`text-xs ${msg.ok ? "text-emerald-800" : "text-rose-700"}`}>{msg.text}</p>}
+
+          {!data.connection ? (
+            <form onSubmit={(e) => { e.preventDefault(); op({ op: "connect", ...conn }, "connect"); }} className="rounded-xl border hairline bg-white p-3.5 grid sm:grid-cols-3 gap-2">
+              <input className={field} placeholder="https://their-site.com" aria-label="WordPress site address" value={conn.site} onChange={(e) => setConn({ ...conn, site: e.target.value })} required />
+              <input className={field} placeholder="WordPress username" aria-label="WordPress username" value={conn.username} onChange={(e) => setConn({ ...conn, username: e.target.value })} required autoComplete="off" />
+              <input className={field} type="password" placeholder="Application password" aria-label="Application password" value={conn.appPassword} onChange={(e) => setConn({ ...conn, appPassword: e.target.value })} required autoComplete="new-password" />
+              <div className="sm:col-span-3 flex flex-wrap items-center gap-2">
+                <button disabled={!!busy} className="text-xs px-3 py-1.5 btn-premium inline-flex items-center gap-1">{busy === "connect" && <Loader2 className="w-3 h-3 animate-spin" />} Test and connect</button>
+                <span className="text-[11px] text-forest-900/65">The owner creates it in WordPress: Users → Profile → Application Passwords. Stored encrypted; they can revoke it any time.</span>
+              </div>
+            </form>
+          ) : (
+            <>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-forest-900/70">
+                Connected as {data.connection.user} on {new Date(data.connection.connectedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+                {data.connection.plugins?.yoast && " · Yoast"}{data.connection.plugins?.rankMath && " · Rank Math"}
+                <button type="button" onClick={() => op({ op: "disconnect" }, "disconnect")} className="underline">Disconnect</button>
+              </div>
+              {data.pagesError && <p className="text-xs text-rose-700">{data.pagesError}</p>}
+              <form onSubmit={(e) => { e.preventDefault(); op({ op: "apply", ...change, pageId: Number(change.pageId) }, "apply"); }} className="rounded-xl border hairline bg-white p-3.5 space-y-2">
+                <div className="grid sm:grid-cols-2 gap-2">
+                  <select className={field} aria-label="Page" value={change.pageId} onChange={(e) => setChange({ ...change, pageId: e.target.value })} required>
+                    <option value="">Choose a page…</option>
+                    {data.pages.map((p) => <option key={p.id} value={p.id}>{p.title}{p.status !== "publish" ? ` (${p.status})` : ""}</option>)}
+                  </select>
+                  <select className={field} aria-label="Change type" value={change.kind} onChange={(e) => setChange({ ...change, kind: e.target.value })}>
+                    <option value="append_html">Add a block (FAQ, schema)</option>
+                    <option value="replace_content">Replace page wording (needs owner OK)</option>
+                  </select>
+                </div>
+                {needsApproval && (
+                  <select className={field} aria-label="Approved work-log item" value={change.actionId} onChange={(e) => setChange({ ...change, actionId: e.target.value })} required>
+                    <option value="">Owner-approved work-log item…</option>
+                    {data.approved.map((a) => <option key={a.id} value={a.id}>{a.title}</option>)}
+                  </select>
+                )}
+                <textarea className={`${field} font-mono text-xs`} rows={6} aria-label="HTML to apply" placeholder={change.kind === "append_html" ? "HTML block, e.g. an FAQ section and its <script type=\"application/ld+json\"> schema" : "The page's full new content (HTML)"} value={change.html} onChange={(e) => setChange({ ...change, html: e.target.value })} required />
+                <div className="flex flex-wrap items-center gap-2">
+                  <button disabled={!!busy} className="text-xs px-3 py-1.5 btn-premium inline-flex items-center gap-1">{busy === "apply" && <Loader2 className="w-3 h-3 animate-spin" />} Back up and apply</button>
+                  <span className="text-[11px] text-forest-900/65">The page is backed up first, then re-read to confirm the change stuck; if not, it's restored.</span>
+                </div>
+              </form>
+            </>
+          )}
+
+          {data.backups.length > 0 && (
+            <div>
+              <div className="text-xs font-semibold mb-1.5">Changes made ({data.backups.length})</div>
+              <ul className="space-y-1.5">
+                {data.backups.map((b) => (
+                  <li key={b.id} className="rounded-xl border hairline bg-white p-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <span><a href={b.link} target="_blank" rel="noopener noreferrer" className="font-medium underline">{b.pageTitle || `Page ${b.pageId}`}</a> · {b.kind === "append_html" ? "block added" : "wording replaced"} · {new Date(b.at).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} by {b.by}</span>
+                    {b.undoneAt ? <span className="text-forest-900/60">Undone {new Date(b.undoneAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span>
+                      : <button type="button" disabled={!!busy} onClick={() => op({ op: "undo", backupId: b.id }, "undo")} className="px-2.5 py-1 rounded-lg border hairline inline-flex items-center gap-1">{busy === "undo" && <Loader2 className="w-3 h-3 animate-spin" />} Undo</button>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </section>

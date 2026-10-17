@@ -4,6 +4,7 @@ import { Radar, FileText, Bot } from "lucide-react";
 import { getCurrentUser } from "@/lib/session";
 import { isAdmin } from "@/lib/clients";
 import { ConciergeConsole } from "@/components/ConciergeConsole";
+import { AlertsBanner } from "@/components/AlertsBanner";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -69,6 +70,7 @@ export default async function ConciergePage() {
         </div>
       )}
 
+      <AlertsBanner />
       <ConciergeConsole />
     </div>
   );

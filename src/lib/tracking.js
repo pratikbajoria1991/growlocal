@@ -3,8 +3,8 @@
 //   Local search grid — for each keyword, Google Maps rank from a grid of
 //     points around the business (each search biased to that point), matched
 //     on the business's Google place ID, not its name.
-//   AI visibility — whether Gemini with Google Search grounding names the
-//     business for each keyword. Google's AI only; we don't query ChatGPT.
+//   AI visibility — whether Gemini (Google Search grounded) and, when an
+//     OpenAI key is set, ChatGPT (web search) name the business per keyword.
 //   Reviews — rating and count over time, plus the reviews Google returns
 //     (at most 5, chosen by relevance, not recency).
 //
@@ -14,7 +14,7 @@
 import { get, set } from "./store";
 import { placesBatch, PlacesError } from "./places";
 import { resolvePlace } from "./gbp-audit";
-import { aiAnswerCheck, aiAnswerConfigured } from "./ai-answer";
+import { aiAnswerCheck, aiAnswerConfigured, chatgptAnswerCheck, chatgptConfigured } from "./ai-answer";
 import { listClients } from "./clients";
 
 const cfgKey = (id) => `track:config:${id}`;
@@ -95,13 +95,16 @@ export async function measureTracking(client, cfg) {
 
   const requests = cfg.keywords.flatMap((kw) => points.map((p) => ({ kind: "text", query: kw, max: 20, fields: ["id"], bias: { lat: p.lat, lng: p.lng, radius } })));
   const area = areaOf(place) || client.city || "";
+  const business = place.displayName?.text || client.name;
+  const engines = [
+    aiAnswerConfigured() && ["gemini", aiAnswerCheck],
+    chatgptConfigured() && ["chatgpt", chatgptAnswerCheck],
+  ].filter(Boolean);
   const [results, ai] = await Promise.all([
     inChunks(requests),
-    aiAnswerConfigured()
-      ? Promise.all(cfg.keywords.slice(0, 3).map((kw) => aiAnswerCheck({ business: place.displayName?.text || client.name, keyword: kw, area })
-        .then((r) => ({ keyword: kw, mentioned: r.mentioned, question: r.question, sources: r.sources.slice(0, 5), grounded: r.grounded }))
-        .catch((e) => ({ keyword: kw, error: e.message }))))
-      : Promise.resolve([]),
+    Promise.all(engines.flatMap(([engine, check]) => cfg.keywords.slice(0, 3).map((kw) => check({ business, keyword: kw, area })
+      .then((r) => ({ engine, keyword: kw, mentioned: r.mentioned, question: r.question, sources: r.sources.slice(0, 5), grounded: r.grounded }))
+      .catch((e) => ({ engine, keyword: kw, error: e.message }))))),
   ]);
 
   let failed = 0;

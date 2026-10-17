@@ -30,6 +30,7 @@ import { AGENTS, routeIssue } from "./agents";
 import { makeTools, scores } from "./tools";
 import { applyEdits, describeEdits, jsonldTypes } from "./patch";
 import { checkText, jevUnsupportedClaims } from "./guard";
+import { alert } from "../notify";
 
 const SITE_AGENTS = ["seo", "geo", "aeo"]; // priority order when two agents touch the same thing
 const STAGES = ["discover", "specialists", "review", "revise", "prove", "done"];
@@ -392,7 +393,10 @@ export async function advanceCrew(id, { llm = null } = {}) {
   } catch (e) {
     job.attempts[stage] = (job.attempts[stage] || 0) + 1;
     job.trace.push({ at: new Date().toISOString(), stage, error: `stage failed (attempt ${job.attempts[stage]}): ${e.message}` });
-    if (job.attempts[stage] >= 2) { job.status = "failed"; job.error = `${stage}: ${e.message}`; }
+    if (job.attempts[stage] >= 2) {
+      job.status = "failed"; job.error = `${stage}: ${e.message}`;
+      await alert({ source: "crew", title: `Crew run failed at "${stage}"`, detail: `Run ${id}${job.business ? ` for ${job.business}` : ""}: ${e.message}`, clientId: job.params?.clientId || null });
+    }
   }
   job.updatedAt = new Date().toISOString();
   job.lockUntil = null;

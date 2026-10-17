@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { dueForTracking, runTracking } from "@/lib/tracking";
+import { alert } from "@/lib/notify";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,6 +29,7 @@ export async function GET(req) {
       done.push({ clientId: c.id, at: s.at });
     } catch (e) {
       done.push({ clientId: c.id, error: e.message });
+      await alert({ source: "tracking", title: `Weekly tracking failed for ${c.name}`, detail: e.message, clientId: c.id });
     }
   }
   return NextResponse.json({ at: new Date().toISOString(), done });

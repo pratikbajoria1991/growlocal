@@ -45,19 +45,23 @@ export function MapsVisibility({ snapshots }) {
   );
 }
 
+const ENGINE = { gemini: "Google's AI (Gemini)", chatgpt: "ChatGPT" };
+const engineOf = (a) => a.engine || "gemini";
+
 export function AiVisibility({ snapshots }) {
   const s = snapshots[0];
   if (!s?.ai?.length) return null;
+  const hasChatgpt = s.ai.some((a) => engineOf(a) === "chatgpt");
   return (
     <Card icon={Bot} title="AI answer visibility"
-      sub="Whether Google's Gemini, searching the web, names you when asked for the best in your area. Google's AI only; ChatGPT isn't checked yet.">
+      sub={`Whether ${hasChatgpt ? "Google's AI and ChatGPT" : "Google's AI (Gemini)"}, searching the web, name you when asked for the best in your area.${hasChatgpt ? "" : " ChatGPT isn't checked yet."}`}>
       <ul className="space-y-4">
         {s.ai.map((a) => {
-          const hist = snapshots.slice(0, 8).map((x) => x.ai?.find((y) => y.keyword === a.keyword)).filter(Boolean).reverse();
+          const hist = snapshots.slice(0, 8).map((x) => x.ai?.find((y) => y.keyword === a.keyword && engineOf(y) === engineOf(a))).filter(Boolean).reverse();
           return (
-            <li key={a.keyword} className="border-t hairline pt-4 first:border-0 first:pt-0">
+            <li key={`${engineOf(a)}:${a.keyword}`} className="border-t hairline pt-4 first:border-0 first:pt-0">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-                <span className="font-semibold">“{a.keyword}”</span>
+                <span className="font-semibold">“{a.keyword}” <span className="font-normal text-sm text-forest-900/65">· {ENGINE[engineOf(a)]}</span></span>
                 {a.error ? <span className="text-xs text-forest-900/65">Check failed this week</span>
                   : a.mentioned ? <span className="text-xs font-semibold rounded-full px-2.5 py-1 bg-emerald-600/10 text-emerald-800 inline-flex items-center gap-1"><Check className="w-3.5 h-3.5" aria-hidden="true" />Named</span>
                   : <span className="text-xs font-semibold rounded-full px-2.5 py-1 bg-rose-600/10 text-rose-800 inline-flex items-center gap-1"><X className="w-3.5 h-3.5" aria-hidden="true" />Not named</span>}

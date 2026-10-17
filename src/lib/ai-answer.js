@@ -19,6 +19,70 @@ export function aiAnswerConfigured() {
   return Boolean(process.env.GEMINI_API_KEY);
 }
 
+// Whole business name, or every word of a 2+ word name, appears in the answer.
+export function isMentioned(business, answer) {
+  const target = norm(business);
+  const hay = norm(answer);
+  const tokens = target.split(" ").filter((t) => t.length > 2);
+  return Boolean(target) && (hay.includes(target) || (tokens.length >= 2 && tokens.every((t) => hay.includes(t))));
+}
+
+// ---------- ChatGPT (OpenAI Responses API with web search) ----------
+export function chatgptConfigured() {
+  return Boolean(process.env.OPENAI_API_KEY);
+}
+
+/** Same question as aiAnswerCheck, asked of ChatGPT searching the live web. */
+export async function chatgptAnswerCheck({ business, keyword, area, country = "IN" }) {
+  const question = `Which are the best ${keyword.trim()} in ${area.trim()}? Recommend specific businesses by name with a one-line reason each.`;
+  const model = process.env.OPENAI_MODEL || "gpt-5.5";
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 45_000);
+  let data;
+  try {
+    const res = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      signal: ctrl.signal,
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+      body: JSON.stringify({
+        model,
+        input: question,
+        tools: [{ type: "web_search", user_location: { type: "approximate", country, ...(area ? { city: area.split(",").pop().trim() } : {}) } }],
+        tool_choice: "auto",
+      }),
+    });
+    data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error?.message || `OpenAI returned ${res.status}`);
+  } catch (e) {
+    throw new Error(e.name === "AbortError" ? "ChatGPT took too long to answer." : e.message);
+  } finally {
+    clearTimeout(t);
+  }
+
+  const parts = (data.output || []).filter((o) => o.type === "message").flatMap((m) => m.content || []).filter((c) => c.type === "output_text");
+  const answer = parts.map((p) => p.text || "").join("").trim();
+  if (!answer) throw new Error("ChatGPT didn't return an answer.");
+  const seen = new Set();
+  const sources = [];
+  for (const a of parts.flatMap((p) => p.annotations || [])) {
+    if (a.type !== "url_citation" || !a.url) continue;
+    let host;
+    try { host = new URL(a.url).hostname.replace(/^www\./, ""); } catch { continue; }
+    if (seen.has(host)) continue;
+    seen.add(host);
+    sources.push({ title: host, uri: `https://${host}` });
+  }
+  return {
+    checkedAt: new Date().toISOString(),
+    model,
+    grounded: (data.output || []).some((o) => o.type === "web_search_call"),
+    question,
+    answer: answer.slice(0, 4000),
+    mentioned: isMentioned(business, answer),
+    sources: sources.slice(0, 10),
+  };
+}
+
 // Two attempts must fit inside the route's 60s limit.
 async function ask(question, grounded) {
   const ctrl = new AbortController();
@@ -79,10 +143,7 @@ export async function aiAnswerCheck({ business, keyword, area }) {
     throw e;
   }
 
-  const target = norm(business);
-  const hay = norm(answer);
-  const tokens = target.split(" ").filter((t) => t.length > 2);
-  const mentioned = Boolean(target) && (hay.includes(target) || (tokens.length >= 2 && tokens.every((t) => hay.includes(t))));
+  const mentioned = isMentioned(business, answer);
 
   const sources = [];
   const seen = new Set();
