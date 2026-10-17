@@ -14,6 +14,8 @@
 export const CITATION_STATUSES = [
   { id: "todo", label: "Not started" },
   { id: "submitted", label: "Submitted" },
+  { id: "owner_action", label: "Waiting on owner" }, // e.g. a verification code or call
+  { id: "needs_fix", label: "Listed, details wrong" },
   { id: "live", label: "Live" },
   { id: "rejected", label: "Rejected" },
   { id: "na", label: "Not applicable" },
@@ -133,14 +135,19 @@ export function citationProgress(directories, state = {}) {
   const applicable = directories.filter((d) => state[d.id]?.status !== "na");
   const total = applicable.reduce((n, d) => n + d.weight, 0);
   const earned = applicable.reduce((n, d) => n + (state[d.id]?.status === "live" ? d.weight : 0), 0);
-  const submitted = applicable.filter((d) => state[d.id]?.status === "submitted").length;
-  const live = applicable.filter((d) => state[d.id]?.status === "live").length;
+  const count = (s) => applicable.filter((d) => state[d.id]?.status === s).length;
+  const live = count("live");
+  const submitted = count("submitted");
+  const ownerAction = count("owner_action");
+  const needsFix = count("needs_fix");
 
   return {
     percent: total ? Math.round((earned / total) * 100) : 0,
     live,
     submitted,
-    remaining: applicable.length - live - submitted,
+    ownerAction,
+    needsFix,
+    remaining: applicable.length - live - submitted - ownerAction - needsFix,
     count: applicable.length,
   };
 }

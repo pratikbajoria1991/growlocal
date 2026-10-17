@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { WorkLogPanel } from "./WorkLogPanel";
 import { onboardingProgress } from "@/lib/onboarding";
+import { MapsVisibility, AiVisibility, Reviews } from "./visibility/Reports";
 
 const ACTIONS = [
   { id: "audit", label: "Website audit", icon: Search, needs: "website" },
@@ -244,6 +245,9 @@ export function ConciergeConsole() {
             {/* Citations — the manual directory submission work */}
             <CitationsPanel client={active} />
 
+            {/* Weekly visibility tracking — grid, AI answers, reviews */}
+            <TrackingPanel client={active} />
+
             {/* Drafts */}
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-[11px] uppercase tracking-[0.15em] text-forest-900/65">Drafts ({drafts.length})</h3>
@@ -268,13 +272,15 @@ export function ConciergeConsole() {
   );
 }
 
-// Directory submissions. There's no API for this on any of these platforms —
-// it's manual form-filling, which is precisely why it's a billable service and
-// not something a competitor's software does for free.
+// Directory listings: done-for-you submission and fixing. No directory has a
+// submission API, so the team submits by hand from the kit below; this tracks
+// each listing, what's wrong with it, and checks live ones for the right details.
 function CitationsPanel({ client }) {
   const [data, setData] = useState(null);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(null);
+  const [msg, setMsg] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/concierge/citations?clientId=${encodeURIComponent(client.id)}`);
@@ -283,22 +289,26 @@ function CitationsPanel({ client }) {
 
   useEffect(() => { load(); }, [load]);
 
-  async function update(directoryId, patch) {
-    setSaving(directoryId);
-    const current = data?.state?.[directoryId] || {};
+  async function post(directoryId, body) {
+    setSaving(directoryId); setMsg(null);
     const res = await fetch("/api/concierge/citations", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ clientId: client.id, directoryId, status: current.status, listingUrl: current.listingUrl, ...patch }),
+      body: JSON.stringify({ clientId: client.id, directoryId, ...body }),
     });
+    const d = await res.json().catch(() => ({}));
     if (res.ok) {
-      const d = await res.json();
       setData((prev) => ({ ...prev, state: d.state, progress: d.progress }));
-    }
+      if (d.check) setMsg({ id: directoryId, ok: d.check.ok, text: d.check.ok ? "Name and phone match on the live listing." : d.check.reason });
+    } else setMsg({ id: directoryId, ok: false, text: d.error || "Couldn't save." });
     setSaving(null);
   }
 
   if (!data) return null;
-  const { directories, state, progress } = data;
+  const { directories, state, progress, kit } = data;
+  const kitText = kit ? [
+    ["Business name", kit.name], ["Address", kit.address], ["Phone", kit.phone], ["Website", kit.website],
+    ["Category", kit.category], ["Hours", kit.hours], ["Services", kit.services], ["Areas served", kit.areas], ["Description", kit.description],
+  ].filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join("\n") : "";
 
   return (
     <section className="mb-8">
@@ -313,48 +323,163 @@ function CitationsPanel({ client }) {
           <div className="h-full bg-indigo-500 transition-all" style={{ width: `${progress.percent}%` }} />
         </div>
         <p className="text-xs text-forest-900/65 mt-1.5">
-          {progress.percent}% of weighted citation value claimed · {progress.submitted} awaiting approval · {progress.remaining} not started
+          {progress.percent}% of weighted value live · {progress.submitted} submitted · {progress.ownerAction} waiting on owner · {progress.needsFix} need fixing · {progress.remaining} not started
         </p>
       </button>
 
       {open && (
-        <ul className="mt-4 space-y-1.5">
-          {directories.map((d) => {
-            const s = state[d.id]?.status || "todo";
-            return (
-              <li key={d.id} className={`rounded-xl border p-3.5 ${s === "live" ? "border-emerald-500/25 bg-emerald-500/[0.03]" : "hairline bg-white"}`}>
-                <div className="flex flex-wrap items-start gap-3">
-                  <div className="flex-1 min-w-[180px]">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">{d.name}</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-forest-900/5 text-forest-900/65">{d.group}</span>
-                      <span className="text-[10px] text-forest-900/65">value {d.weight}/10</span>
+        <>
+          {kit && (
+            <div className="mt-4 rounded-xl border hairline bg-canvas-100 p-3.5">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="text-xs font-semibold">Submission kit: use exactly these details everywhere</span>
+                <button type="button" onClick={async () => { try { await navigator.clipboard.writeText(kitText); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch {} }}
+                  className="text-xs px-2.5 py-1 rounded-lg border hairline bg-white inline-flex items-center gap-1">
+                  {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />} Copy all
+                </button>
+              </div>
+              <pre className="text-xs whitespace-pre-wrap leading-relaxed">{kitText || "No details yet."}</pre>
+              <p className="text-[11px] text-forest-900/65 mt-2">Source: {kit.source}</p>
+            </div>
+          )}
+          <ul className="mt-3 space-y-1.5">
+            {directories.map((d) => {
+              const st = state[d.id] || {};
+              const s = st.status || "todo";
+              return (
+                <li key={d.id} className={`rounded-xl border p-3.5 ${s === "live" ? "border-emerald-500/25 bg-emerald-500/[0.03]" : s === "needs_fix" || s === "owner_action" ? "border-amber-500/30 bg-amber-500/[0.04]" : "hairline bg-white"}`}>
+                  <div className="flex flex-wrap items-start gap-3">
+                    <div className="flex-1 min-w-[180px]">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium">{d.name}</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-forest-900/5 text-forest-900/65">{d.group}</span>
+                        <span className="text-[10px] text-forest-900/65">value {d.weight}/10</span>
+                      </div>
+                      <p className="text-xs text-forest-900/70 leading-relaxed mt-1">{d.why}</p>
                     </div>
-                    <p className="text-xs text-forest-900/70 leading-relaxed mt-1">{d.why}</p>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <a href={d.url} target="_blank" rel="noopener noreferrer"
+                        className="text-xs px-2.5 py-1.5 rounded-lg border hairline hover:bg-forest-900/[0.03] inline-flex items-center gap-1">
+                        Submit <ExternalLink className="w-3 h-3" />
+                      </a>
+                      <select value={s} disabled={saving === d.id} onChange={(e) => post(d.id, { status: e.target.value })}
+                        aria-label={`Status for ${d.name}`}
+                        className="text-xs px-2.5 py-1.5 rounded-lg border hairline bg-white outline-none focus:border-indigo-500/60">
+                        <option value="todo">Not started</option>
+                        <option value="submitted">Submitted</option>
+                        <option value="owner_action">Waiting on owner</option>
+                        <option value="needs_fix">Listed, details wrong</option>
+                        <option value="live">Live</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="na">N/A</option>
+                      </select>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <a href={d.url} target="_blank" rel="noopener noreferrer"
-                      className="text-xs px-2.5 py-1.5 rounded-lg border hairline hover:bg-forest-900/[0.03] inline-flex items-center gap-1">
-                      Submit <ExternalLink className="w-3 h-3" />
-                    </a>
-                    <select
-                      value={s}
-                      disabled={saving === d.id}
-                      onChange={(e) => update(d.id, { status: e.target.value })}
-                      className="text-xs px-2.5 py-1.5 rounded-lg border hairline bg-white outline-none focus:border-indigo-500/60"
-                    >
-                      <option value="todo">Not started</option>
-                      <option value="submitted">Submitted</option>
-                      <option value="live">Live</option>
-                      <option value="rejected">Rejected</option>
-                      <option value="na">N/A</option>
-                    </select>
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+                  {s !== "todo" && s !== "na" && (
+                    <div className="mt-2.5 grid sm:grid-cols-[1fr_1fr_auto] gap-2">
+                      <input defaultValue={st.listingUrl || ""} placeholder="Listing URL" aria-label={`Listing URL for ${d.name}`}
+                        onBlur={(e) => e.target.value !== (st.listingUrl || "") && post(d.id, { listingUrl: e.target.value })}
+                        className="text-xs px-2.5 py-1.5 rounded-lg border hairline bg-white outline-none focus:border-indigo-500/60" />
+                      <input defaultValue={st.note || ""} placeholder={s === "owner_action" ? "What the owner must do (shown to them)" : "Note: what's wrong, or what's pending"} aria-label={`Note for ${d.name}`}
+                        onBlur={(e) => e.target.value !== (st.note || "") && post(d.id, { note: e.target.value })}
+                        className="text-xs px-2.5 py-1.5 rounded-lg border hairline bg-white outline-none focus:border-indigo-500/60" />
+                      <button type="button" disabled={!st.listingUrl || saving === d.id} onClick={() => post(d.id, { check: true })}
+                        className="text-xs px-2.5 py-1.5 rounded-lg border hairline bg-white disabled:opacity-40 inline-flex items-center gap-1">
+                        {saving === d.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />} Check listing
+                      </button>
+                    </div>
+                  )}
+                  {(msg?.id === d.id || st.check) && (
+                    <p className={`text-[11px] mt-1.5 ${(msg?.id === d.id ? msg.ok : st.check?.ok) ? "text-emerald-800" : "text-amber-900"}`}>
+                      {msg?.id === d.id ? msg.text : `Last check ${new Date(st.check.at).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}: ${st.check.ok ? "details match" : st.check.reason}`}
+                    </p>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      )}
+    </section>
+  );
+}
+
+// Weekly visibility tracking: keywords, grid, run now, latest reports.
+function TrackingPanel({ client }) {
+  const [data, setData] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState(null);
+  const [busy, setBusy] = useState(null);
+  const [err, setErr] = useState(null);
+
+  const load = useCallback(async () => {
+    const res = await fetch(`/api/concierge/tracking?clientId=${encodeURIComponent(client.id)}`);
+    if (res.ok) {
+      const d = await res.json();
+      setData(d);
+      setForm({ keywords: d.config.keywords.join("\n"), grid: d.config.grid, spacingKm: d.config.spacingKm });
+    }
+  }, [client.id]);
+  useEffect(() => { load(); }, [load]);
+
+  async function call(body, kind) {
+    setBusy(kind); setErr(null);
+    try {
+      const res = await fetch("/api/concierge/tracking", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clientId: client.id, ...body }) });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d.error || "Failed.");
+      await load();
+    } catch (e) { setErr(e.message); }
+    setBusy(null);
+  }
+
+  if (!data || !form) return null;
+  const snaps = data.snapshots;
+  const last = snaps[0];
+  const searches = form.keywords.split(/[\n,]/).filter((k) => k.trim().length >= 3).length * form.grid * form.grid;
+
+  return (
+    <section className="mb-8">
+      <button onClick={() => setOpen((o) => !o)} className="w-full text-left flex items-center justify-between mb-2">
+        <h3 className="text-[11px] uppercase tracking-[0.15em] text-forest-900/65 inline-flex items-center gap-1.5">
+          <BarChart3 className="w-3.5 h-3.5" /> Visibility tracking — {data.config.keywords.length ? `${data.config.keywords.length} keywords` : "not set up"}{last ? ` · last ${new Date(last.at).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}` : ""}
+        </h3>
+        <span className="text-xs text-forest-900/65">{open ? "Hide" : "Show"}</span>
+      </button>
+      {open && (
+        <div className="mt-3">
+          <div className="rounded-xl border hairline bg-white p-3.5 grid sm:grid-cols-[1fr_auto_auto] gap-3 items-end">
+            <label className="block text-xs">Keywords (up to 5, one per line; first 3 also get the AI check)
+              <textarea rows={3} value={form.keywords} onChange={(e) => setForm({ ...form, keywords: e.target.value })}
+                className="mt-1 w-full px-2.5 py-1.5 rounded-lg border hairline outline-none focus:border-indigo-500/60 text-sm" placeholder={"dentist\ndental implants"} />
+            </label>
+            <label className="block text-xs">Grid
+              <select value={form.grid} onChange={(e) => setForm({ ...form, grid: Number(e.target.value) })} className="mt-1 block px-2.5 py-1.5 rounded-lg border hairline bg-white text-sm">
+                {[3, 5, 7].map((n) => <option key={n} value={n}>{n}×{n}</option>)}
+              </select>
+            </label>
+            <label className="block text-xs">Spacing (km)
+              <input type="number" step="0.1" min="0.3" max="5" value={form.spacingKm} onChange={(e) => setForm({ ...form, spacingKm: e.target.value })} className="mt-1 block w-24 px-2.5 py-1.5 rounded-lg border hairline text-sm" />
+            </label>
+            <div className="sm:col-span-3 flex flex-wrap items-center gap-2">
+              <button type="button" disabled={!!busy} onClick={() => call({ keywords: form.keywords, grid: form.grid, spacingKm: form.spacingKm }, "save")} className="text-xs px-3 py-1.5 rounded-lg border hairline bg-white inline-flex items-center gap-1">
+                {busy === "save" && <Loader2 className="w-3 h-3 animate-spin" />} Save settings
+              </button>
+              <button type="button" disabled={!!busy || !data.config.keywords.length} onClick={() => call({ run: true }, "run")} className="text-xs px-3 py-1.5 btn-premium inline-flex items-center gap-1 disabled:opacity-40">
+                {busy === "run" ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />} Run check now
+              </button>
+              <span className="text-[11px] text-forest-900/65">{searches} Google Maps searches per check (IDs only). Active clients are checked weekly automatically.</span>
+            </div>
+            {err && <p role="alert" className="sm:col-span-3 text-xs text-rose-700">{err}</p>}
+          </div>
+          {last ? (
+            <div className="mt-4">
+              <MapsVisibility snapshots={snaps} />
+              <AiVisibility snapshots={snaps} />
+              <Reviews snapshots={snaps} />
+            </div>
+          ) : <p className="text-xs text-forest-900/65 mt-3">No checks yet. Save keywords, then run a check.</p>}
+        </div>
       )}
     </section>
   );

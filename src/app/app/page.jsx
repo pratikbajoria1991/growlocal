@@ -8,6 +8,9 @@ import { OwnerDecision } from "@/components/OwnerDecision";
 import { OwnerAnswers } from "@/components/OwnerAnswers";
 import { monthlyReport, clientRuns, tidyQuestions } from "@/lib/crew/monthly";
 import { onboardingProgress } from "@/lib/onboarding";
+import { listSnapshots } from "@/lib/tracking";
+import { getCitations } from "@/lib/citations";
+import { MapsVisibility, AiVisibility, Reviews, Listings } from "@/components/visibility/Reports";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your business", robots: { index: false, follow: false } };
@@ -21,8 +24,10 @@ export default async function OwnerDashboard() {
   const businesses = await clientsForOwner(user.email);
   const withActions = await Promise.all(
     businesses.map(async (b) => {
-      const [actions, report, runs] = await Promise.all([listActions(b.id), monthlyReport(b.id), clientRuns(b.id)]);
-      return { business: b, actions, report, runs };
+      const [actions, report, runs, snapshots, citations] = await Promise.all([
+        listActions(b.id), monthlyReport(b.id), clientRuns(b.id), listSnapshots(b.id), getCitations(b),
+      ]);
+      return { business: b, actions, report, runs, snapshots: snapshots.slice(0, 12), citations };
     }),
   );
 
@@ -51,15 +56,16 @@ export default async function OwnerDashboard() {
       {businesses.length === 0 ? (
         <NotAClientYet />
       ) : (
-        withActions.map(({ business, actions, report, runs }) => (
-          <BusinessView key={business.id} business={business} actions={actions} report={report} runs={runs} showName={businesses.length > 1} />
+        withActions.map(({ business, actions, report, runs, snapshots, citations }) => (
+          <BusinessView key={business.id} business={business} actions={actions} report={report} runs={runs}
+            snapshots={snapshots} citations={citations} showName={businesses.length > 1} />
         ))
       )}
     </div>
   );
 }
 
-function BusinessView({ business, actions, report, runs, showName }) {
+function BusinessView({ business, actions, report, runs, snapshots, citations, showName }) {
   const awaiting = actions.filter((a) => a.status === "awaiting_approval");
   const upcoming = actions.filter((a) => a.status === "planned" || a.status === "approved")
     .sort((x, y) => x.plannedFor.localeCompare(y.plannedFor));
@@ -96,6 +102,17 @@ function BusinessView({ business, actions, report, runs, showName }) {
       </Block>
 
       <GrowthPlan business={business} report={report} runs={runs} />
+
+      {/* Weekly tracking: Maps grid, AI answers, reviews; then listings */}
+      {snapshots.length > 0 && (
+        <div className="mb-8">
+          <h2 className="font-display font-bold text-2xl tracking-[-0.03em] mb-4">Your visibility</h2>
+          <MapsVisibility snapshots={snapshots} />
+          <AiVisibility snapshots={snapshots} />
+          <Reviews snapshots={snapshots} />
+        </div>
+      )}
+      {Object.keys(citations.state).length > 0 && <Listings data={citations} />}
 
       {/* Results */}
       {measured.length > 0 && (
