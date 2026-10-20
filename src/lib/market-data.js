@@ -69,40 +69,41 @@ export const HIGH_TICKET = {
 // Google profile study, 20 October 2026 — aggregates only, no business named.
 // Source: output/gbp-leads/india-high-ticket-2026-10-18/
 // Growlocal-India-High-Ticket-GBP-Leads-2026-10-20.xlsx (1,000 public Google
-// Maps listings, 55 Indian cities) — analysed and validated 20 Oct 2026.
-// All figures are over the 998 listings left after removing 2 that live Google
-// shows as permanently closed. Only fields the live re-check confirmed are used
-// (website, phone, rating, review count, address, hours). Photo counts are NOT
-// used: the scrape caps photos at 5, and live Google showed 5+ photos for 114
-// of the 143 sampled listings it counted as under 5.
+// Maps listings, 55 Indian cities). ALL 1,000 were re-fetched from the live
+// Google Places API in one pass on 20 Oct 2026 and every figure below is a live
+// value over the 997 listings Google shows as operational (3 closed ones
+// removed). No sampling, so no estimates. Photo counts use live Google (it
+// returns at most 10, so "under 5" is exact); the scrape's photo counts were
+// wrong for 819 of the 888 listings it flagged and are not used.
 // Full method and checks: docs/data/india-batch-2026-10-20-validation.md
 export const INDIA_BATCH = {
   asOf: "20 Oct 2026",
   collected: 1000,
-  closedRemoved: 2,
-  listings: 998,
+  closedRemoved: 3, // 2 permanently closed, 1 temporarily closed
+  listings: 997,
   cities: 55,
   types: [
-    ["IVF and fertility centres", 527],
+    ["IVF and fertility centres", 526],
     ["multi-specialty hospitals", 451],
     ["bariatric surgery clinics", 20],
   ],
-  // Validation
+  // Validation (all 1,000 live-checked)
   overlapWithEarlier: 0, // of 1,000, matched to the earlier listings by Google's own listing ID
-  liveChecked: 151, // all 46 Priority A + 51 B + 54 C, re-fetched from Google Places
+  liveChecked: 1000,
   organisations: 763, // distinct organisations after merging shared websites and phone numbers
-  branchListings: 307,
+  branchListings: 306,
   branchGroups: 72,
-  // Findings (counts over the 998; the page shows rounded percentages)
+  // Findings (counts over the 997; the page shows rounded percentages)
   noWebsite: 136,
   reviewsUnder76: 197,
-  medianReviews: 352,
+  medianReviews: 351,
   ratedUnder43: 136,
-  rated45Plus: 773,
+  rated45Plus: 772,
   noWebsiteAndUnder76: 59,
-  photoFlagFalse: { checked: 143, wrong: 114 }, // sampled listings the scrape counted as under 5 photos; live Google shows 5+
+  photosUnder5: 68, // live Google
+  photoFlagFalse: { flagged: 888, wrong: 819 }, // scrape counted under 5 photos; live Google shows 5 or more
 };
 
 // Every unique Google listing we hold profile data for: the 3,591 audited
-// (websites scored, rankings searched) plus the 998 profile-only listings.
+// (websites scored, rankings searched) plus the 997 profile-only listings.
 export const TOTAL_LISTINGS = MARKET.businesses + INDIA_BATCH.listings;

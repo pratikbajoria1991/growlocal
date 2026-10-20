@@ -225,9 +225,9 @@ export default function Home() {
 
         <div className="rounded-4xl bg-forest-900 text-canvas-50 p-6 sm:p-8 grid grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            [INDIA_BATCH.listings.toLocaleString("en-IN"), "listings after cleaning", `${INDIA_BATCH.collected.toLocaleString("en-IN")} collected; ${INDIA_BATCH.closedRemoved} that Google shows as permanently closed were removed`],
+            [INDIA_BATCH.listings.toLocaleString("en-IN"), "listings after cleaning", `${INDIA_BATCH.collected.toLocaleString("en-IN")} collected; ${INDIA_BATCH.closedRemoved} that Google shows as closed were removed`],
             [INDIA_BATCH.overlapWithEarlier, `overlap with our earlier ${MARKET.businesses.toLocaleString("en-IN")}`, "matched by Google's own listing ID, not by name"],
-            [INDIA_BATCH.liveChecked, "re-checked on live Google", "names, phones, websites and PIN codes all matched; ratings within 0.1; review counts within 3"],
+            [INDIA_BATCH.liveChecked.toLocaleString("en-IN"), "re-checked on live Google", "every listing, in one pass: names, phones, websites and PIN codes matched; ratings within 0.1; review counts within 10"],
             [INDIA_BATCH.organisations, "distinct organisations", `${INDIA_BATCH.branchListings} of the ${INDIA_BATCH.listings} listings are branches in ${INDIA_BATCH.branchGroups} multi-site groups`],
           ].map(([n, t, d]) => (
             <div key={t} className="min-w-0">
@@ -257,8 +257,8 @@ export default function Home() {
           <div className="rounded-3xl bg-sage-50 border hairline p-6 sm:p-8">
             <h3 className="font-display font-bold text-2xl tracking-[-0.03em] mb-3">What the live check caught</h3>
             <ul className="space-y-3 text-sm text-forest-900/80 leading-relaxed">
-              <li><span className="font-semibold">Photo counts can&apos;t be trusted from a scrape.</span> It counted under 5 photos for most listings, but live Google showed 5 or more for {INDIA_BATCH.photoFlagFalse.wrong} of the {INDIA_BATCH.photoFlagFalse.checked} we re-checked. We left photo counts out.</li>
-              <li><span className="font-semibold">Closed practices slip through.</span> {INDIA_BATCH.closedRemoved} listings were permanently closed. They are removed from every number here.</li>
+              <li><span className="font-semibold">Scraped photo counts were wrong.</span> The scrape counted under 5 photos for {INDIA_BATCH.photoFlagFalse.flagged} listings, but live Google shows 5 or more for {INDIA_BATCH.photoFlagFalse.wrong} of them. Only {INDIA_BATCH.photosUnder5} of the {INDIA_BATCH.listings} really have fewer than 5, so we use the live count.</li>
+              <li><span className="font-semibold">Closed practices slip through.</span> {INDIA_BATCH.closedRemoved} listings were closed on Google (2 permanently), and the scrape had flagged only 2. All are removed from every number here.</li>
               <li><span className="font-semibold">One listing is not one business.</span> Chains list every branch, so {INDIA_BATCH.listings} listings are about {INDIA_BATCH.organisations} organisations.</li>
             </ul>
           </div>
@@ -272,8 +272,8 @@ export default function Home() {
           </div>
         </div>
         <p className="mt-6 text-xs text-forest-900/60 max-w-3xl mx-auto text-center leading-relaxed">
-          Method: public Google Maps listings collected {INDIA_BATCH.asOf} for {INDIA_BATCH.cities} cities, deduplicated by Google listing ID, and {INDIA_BATCH.liveChecked} re-fetched from the live Google Places API
-          (all 46 top-priority listings, each with no website, plus random picks from the rest). Percentages are of {INDIA_BATCH.listings} listings. This is the set we chose to study, not a random sample, and the search
+          Method: public Google Maps listings collected {INDIA_BATCH.asOf} for {INDIA_BATCH.cities} cities, deduplicated by Google listing ID, and all {INDIA_BATCH.liveChecked.toLocaleString("en-IN")} re-fetched from the live Google Places API in one pass,
+          so every figure is a live value, not an estimate. Percentages are of the {INDIA_BATCH.listings} listings Google shows as open. This is the set we chose to study, not a random sample, and the search
           was stopped before it covered every planned city and practice type. No business is named. Together with the {MARKET.businesses.toLocaleString("en-IN")} audited above, that is {TOTAL_LISTINGS.toLocaleString("en-IN")} listings.
         </p>
       </section>
