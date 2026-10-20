@@ -4,7 +4,7 @@ import {
   Radar, Route, Users, ScanSearch, FlaskConical, BookCheck, ShieldCheck, UserCheck, HandHelping, Scale, BadgeCheck,
 } from "lucide-react";
 import { BRAND, PRODUCTS, WEBSITE_AUDIT_CATEGORIES, HOME_FAQ, HOW_IT_WORKS } from "@/lib/brand";
-import { MARKET, HIGH_TICKET } from "@/lib/market-data";
+import { MARKET, HIGH_TICKET, INDIA_BATCH, TOTAL_LISTINGS } from "@/lib/market-data";
 import { JsonLd, faqSchema, webPageSchema, breadcrumbSchema, howToSchema } from "@/lib/schema";
 import { HeroForm } from "@/components/home/HeroForm";
 import { ReportMock } from "@/components/home/ReportMock";
@@ -68,7 +68,7 @@ export default function Home() {
         <div className="relative max-w-7xl mx-auto px-5 sm:px-8 pt-14 sm:pt-24 text-center">
           <a href="#data" className="eyebrow normal-case tracking-normal text-[13px] font-medium hover:border-indigo-500/60 transition-colors mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-brand shrink-0" aria-hidden="true" />
-            We audited {MARKET.businesses.toLocaleString("en-IN")} local businesses. See what we found <ArrowRight className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            We&apos;ve studied {TOTAL_LISTINGS.toLocaleString("en-IN")} local businesses across India. See what we found <ArrowRight className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
           </a>
 
           <h1 className="font-display font-bold text-[2.6rem] leading-[1.02] sm:text-6xl lg:text-[5rem] tracking-[-0.05em] mb-7 max-w-5xl mx-auto text-balance">
@@ -208,6 +208,73 @@ export default function Home() {
           Method: Google Maps listings collected for high-ticket categories across one large metro, each re-fetched from the live Google Places API on {HIGH_TICKET.asOf},
           ranked with one live search for its own category and area, and its website scored with our SEO/AEO/GEO audit. Percentages are of all {HIGH_TICKET.listings} listings
           unless stated. These {HIGH_TICKET.listings} are included in the {MARKET.businesses.toLocaleString("en-IN")} above. This is the set we chose to study, not a random sample. No business is named.
+        </p>
+      </section>
+
+      {/* Google profile study across Indian cities — validated against live Google */}
+      <section id="india" className="max-w-7xl mx-auto px-5 sm:px-8 pt-20 sm:pt-28">
+        <Reveal className="max-w-3xl mx-auto text-center mb-12">
+          <p className="eyebrow mb-6"><BadgeCheck className="w-3.5 h-3.5 text-indigo-600" aria-hidden="true" />Profile study · {INDIA_BATCH.asOf}</p>
+          <h2 className={`${H2} mb-5`}>
+            {INDIA_BATCH.listings.toLocaleString("en-IN")} hospitals and fertility clinics in {INDIA_BATCH.cities} Indian cities. <span className="text-indigo-600">Cleaned and checked against live Google.</span>
+          </h2>
+          <p className="text-lg text-forest-900/70 leading-relaxed text-pretty">
+            Covers {new Intl.ListFormat("en", { style: "long", type: "conjunction" }).format(INDIA_BATCH.types.map(([t, n]) => `${t} (${n})`))}. We chose these practice types because each new patient is a large booking.
+          </p>
+        </Reveal>
+
+        <div className="rounded-4xl bg-forest-900 text-canvas-50 p-6 sm:p-8 grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            [INDIA_BATCH.listings.toLocaleString("en-IN"), "listings after cleaning", `${INDIA_BATCH.collected.toLocaleString("en-IN")} collected; ${INDIA_BATCH.closedRemoved} that Google shows as permanently closed were removed`],
+            [INDIA_BATCH.overlapWithEarlier, `overlap with our earlier ${MARKET.businesses.toLocaleString("en-IN")}`, "matched by Google's own listing ID, not by name"],
+            [INDIA_BATCH.liveChecked, "re-checked on live Google", "names, phones, websites and PIN codes all matched; ratings within 0.1; review counts within 3"],
+            [INDIA_BATCH.organisations, "distinct organisations", `${INDIA_BATCH.branchListings} of the ${INDIA_BATCH.listings} listings are branches in ${INDIA_BATCH.branchGroups} multi-site groups`],
+          ].map(([n, t, d]) => (
+            <div key={t} className="min-w-0">
+              <div className="font-display font-bold text-3xl sm:text-4xl tracking-[-0.04em] text-brand tabular-nums mb-2">{n}</div>
+              <div className="font-semibold text-sm leading-snug mb-1">{t}</div>
+              <div className="text-xs text-canvas-50/65 leading-relaxed">{d}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            [Math.round((INDIA_BATCH.noWebsite / INDIA_BATCH.listings) * 100), "link no website on Google", `${INDIA_BATCH.noWebsite} of ${INDIA_BATCH.listings}: the profile is the only page a patient can find`],
+            [Math.round((INDIA_BATCH.reviewsUnder76 / INDIA_BATCH.listings) * 100), "have fewer than 76 reviews", `${INDIA_BATCH.reviewsUnder76} of ${INDIA_BATCH.listings}; the median across all is ${INDIA_BATCH.medianReviews}`],
+            [Math.round((INDIA_BATCH.ratedUnder43 / INDIA_BATCH.listings) * 100), "are rated below 4.3 stars", `${INDIA_BATCH.ratedUnder43} of ${INDIA_BATCH.listings}; ${INDIA_BATCH.rated45Plus} are rated 4.5 or higher`],
+            [Math.round((INDIA_BATCH.noWebsiteAndUnder76 / INDIA_BATCH.listings) * 100), "have both gaps", `${INDIA_BATCH.noWebsiteAndUnder76} listings with no website and under 76 reviews: the clearest openings`],
+          ].map(([n, t, d], i) => (
+            <Reveal key={t} delay={i * 0.06} className="rounded-3xl bg-white border hairline p-6">
+              <div className="font-display font-bold text-5xl tracking-[-0.05em] leading-none mb-4"><CountUp to={n} suffix="%" /></div>
+              <div className="font-semibold leading-snug mb-1.5">{t}</div>
+              <div className="text-sm text-forest-900/65 leading-relaxed">{d}</div>
+            </Reveal>
+          ))}
+        </div>
+
+        <div className="mt-4 grid lg:grid-cols-2 gap-4">
+          <div className="rounded-3xl bg-sage-50 border hairline p-6 sm:p-8">
+            <h3 className="font-display font-bold text-2xl tracking-[-0.03em] mb-3">What the live check caught</h3>
+            <ul className="space-y-3 text-sm text-forest-900/80 leading-relaxed">
+              <li><span className="font-semibold">Photo counts can&apos;t be trusted from a scrape.</span> It counted under 5 photos for most listings, but live Google showed 5 or more for {INDIA_BATCH.photoFlagFalse.wrong} of the {INDIA_BATCH.photoFlagFalse.checked} we re-checked. We left photo counts out.</li>
+              <li><span className="font-semibold">Closed practices slip through.</span> {INDIA_BATCH.closedRemoved} listings were permanently closed. They are removed from every number here.</li>
+              <li><span className="font-semibold">One listing is not one business.</span> Chains list every branch, so {INDIA_BATCH.listings} listings are about {INDIA_BATCH.organisations} organisations.</li>
+            </ul>
+          </div>
+          <div className="rounded-3xl bg-white border hairline p-6 sm:p-8">
+            <h3 className="font-display font-bold text-2xl tracking-[-0.03em] mb-3">What this doesn&apos;t show</h3>
+            <ul className="space-y-3 text-sm text-forest-900/80 leading-relaxed">
+              <li>Profile data only. Website quality, Google rankings and AI answers were measured for the {MARKET.businesses.toLocaleString("en-IN")} businesses above, not for these.</li>
+              <li>City-to-city comparisons: most cities were searched for one practice type only, so they aren&apos;t comparable.</li>
+              <li>How recent the reviews are, and calls or direction requests.</li>
+            </ul>
+          </div>
+        </div>
+        <p className="mt-6 text-xs text-forest-900/60 max-w-3xl mx-auto text-center leading-relaxed">
+          Method: public Google Maps listings collected {INDIA_BATCH.asOf} for {INDIA_BATCH.cities} cities, deduplicated by Google listing ID, and {INDIA_BATCH.liveChecked} re-fetched from the live Google Places API
+          (all 46 top-priority listings, each with no website, plus random picks from the rest). Percentages are of {INDIA_BATCH.listings} listings. This is the set we chose to study, not a random sample, and the search
+          was stopped before it covered every planned city and practice type. No business is named. Together with the {MARKET.businesses.toLocaleString("en-IN")} audited above, that is {TOTAL_LISTINGS.toLocaleString("en-IN")} listings.
         </p>
       </section>
 
